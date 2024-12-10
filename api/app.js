@@ -12,9 +12,9 @@ const app = express();
 config();
 
 const allowedOrigins = [
-  process.env.CLIENT_URL_LOCAL,
-  process.env.CLIENT_URL_HOST,
-  process.env.CLIENT_URL_PRODUCTION,
+  'https://propertyxchange.com.ng',
+  'https://www.propertyxchange.com.ng',
+  'http://localhost:5173',
 ];
 
 app.use(
