@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"  
+  url      = env("DATABASE_URL")
+}
+
+model Listing {
+ id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  price            Float
+  purpose          String
+  verification     Boolean      @default(false)
+  number_of_beds   Int?
+  number_of_bathrooms Int?
+  toilets               Int?  
+  latitude  String?
+  longitude   String?
+  discountPercent  Float?
+  discountPrice Float?
+  discountEndDate  DateTime?  
+  installment Boolean?
+  appendTo  String?
+  installmentAppendTo  String?
+  initialPayment Float?
+  monthlyPayment Float?
+  duration Int?
+  furnished Boolean?
+  serviced Boolean?
+  newlyBuilt Boolean?
+  parking Boolean?
+  offer Boolean?
+  youtubeLink String?
+  instagramLink     String? 
+  type             String
+  subType String?
+  features String[]
+  street String
+  lga String
+  state String
+  description String
+  thumbnail String?  
+  images           String[]
+  createdAt  DateTime    @default(now())
+  updatedAt   DateTime?
+  user       User        @relation(fields: [userId], references: [id])
+  userId     String      @db.ObjectId
+  savedListing  SavedListing[]
+}
+
+model SavedListing {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  listing    Listing     @relation(fields: [listingId], references: [id])
+  userId    String   @unique @db.ObjectId
+  listingId    String   @unique @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+}
+
+model User {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  email      String      @unique
+  username   String      
+  password   String
+  profilePhoto     String?
+  firstName String?
+  lastName String?
+  phoneNumber String?
+  whatsAppNum String?
+  accountType String?
+  address String?
+  lga String?
+  state String?
+  title String?
+  role String  @default("user")
+  verified Boolean  @default(false)
+  emailVerified Boolean  @default(false)
+  companyName String?
+  companyNumber String?
+  aboutCompany String?
+  companyEmail String? 
+  companyPhoto String?
+  services String?
+  instagramLink String?
+  linkedInLink String?
+  twitterLink String?
+  facebookLink String?
+  lastLogin DateTime?
+  resetPasswordToken   String?
+  resetPasswordExpiredAt  DateTime?
+  verificationToken         String?
+  verificationTokenExpiredAt DateTime?
+  createdAt  DateTime    @default(now())
+  updatedAt   DateTime? 
+  listings Listing[]
+  savedlisting SavedListing[]
+  blogs  Blog[]
+}
+      
+model BlogCategory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  description String?
+  blogs       Blog[]   @relation("CategoryBlogs")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime?
+}
+
+model Blog {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String       @unique
+  content     String
+  seoTitle    String?
+  seoDescription String?
+  isFeatured  Boolean      @default(false)
+  images      String[]
+  tags        String[]
+  author      User         @relation(fields: [authorId], references: [id])
+  authorId    String       @db.ObjectId
+  category    BlogCategory @relation("CategoryBlogs", fields: [categoryId], references: [id])
+  categoryId  String       @db.ObjectId
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?
+}
+
