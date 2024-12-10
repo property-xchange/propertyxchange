@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-const plugin = require('tailwindcss/plugin');
+import plugin from 'tailwindcss/plugin';
 
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -15,7 +15,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        poppins: 'poppins',
+        poppins: 'Poppins',
         questrial: 'Questrial',
       },
       colors: {
@@ -44,7 +44,7 @@ export default {
           transition: 'all 0.3s ease-in-out',
         },
         '.card-shadow': {
-          boxShadow: ' 0 0 0.8rem 0.25rem rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 0 0.8rem 0.25rem rgba(0, 0, 0, 0.1)',
         },
         '.shadow-light': {
           boxShadow: '0.1rem 0.1rem 0.3rem .1rem rgba(0, 0, 0, 0.05)',
