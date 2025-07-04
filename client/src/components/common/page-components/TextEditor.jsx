@@ -36,30 +36,91 @@ const TextEditor = ({ initialValue, onChange }) => {
   };
 
   return (
-    <div className="text-editor" style={{ width: '350px' }}>
+    <div className="text-editor w-full">
+      <style>
+        {`
+          .ck-editor {
+            width: 100% !important;
+          }
+          
+          .ck-editor__main > .ck-editor__editable {
+            width: 100% !important;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+          }
+          
+          .ck-content {
+            width: 100% !important;
+          }
+          
+          /* Dark mode styles */
+          .dark .ck-editor__editable,
+          .dark .ck.ck-editor__main > .ck-editor__editable.ck-rounded-corners {
+            background-color: rgb(55 65 81) !important;
+            color: rgb(243 244 246) !important;
+            border-color: rgb(75 85 99) !important;
+          }
+          
+          .dark .ck.ck-toolbar {
+            background-color: rgb(31 41 55) !important;
+            border-color: rgb(75 85 99) !important;
+          }
+          
+          .dark .ck.ck-toolbar .ck-toolbar__item > .ck-button {
+            color: rgb(243 244 246) !important;
+          }
+          
+          .dark .ck.ck-toolbar .ck-toolbar__item > .ck-button:hover {
+            background-color: rgb(55 65 81) !important;
+          }
+          
+          .dark .ck.ck-toolbar .ck-toolbar__item > .ck-button.ck-on {
+            background-color: rgb(59 130 246) !important;
+            color: white !important;
+          }
+          
+          .dark .ck.ck-editor {
+            border-color: rgb(75 85 99) !important;
+          }
+          
+          /* Focus styles for dark mode */
+          .dark .ck-editor__editable:focus {
+            border-color: rgb(59 130 246) !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+          }
+          
+          /* Placeholder text in dark mode */
+          .dark .ck-editor__editable.ck-placeholder::before {
+            color: rgb(156 163 175) !important;
+          }
+        `}
+      </style>
       <CKEditor
         editor={ClassicEditor}
         data={editorData}
         onChange={handleEditorChange}
         config={{
-          width: '350px', // Set width to 400px
           toolbar: {
             items: [
               'undo',
               'redo',
               '|',
-              'italic',
               'bold',
               'italic',
               'underline',
               'strikethrough',
+              '|',
               'subscript',
               'superscript',
+              '|',
               'numberedList',
               'bulletedList',
-              'link',
-              'insertTable',
               'todoList',
+              '|',
+              'link',
+              '|',
+              'insertTable',
             ],
           },
           plugins: [
@@ -70,7 +131,6 @@ const TextEditor = ({ initialValue, onChange }) => {
             Superscript,
             Underline,
             Essentials,
-            Italic,
             Mention,
             Paragraph,
             Undo,
@@ -80,8 +140,11 @@ const TextEditor = ({ initialValue, onChange }) => {
             TodoList,
             Table,
             TableToolbar,
-            Bold,
           ],
+          placeholder: 'Describe your property in detail...',
+          table: {
+            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'],
+          },
         }}
       />
     </div>

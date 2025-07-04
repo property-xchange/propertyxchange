@@ -6,6 +6,8 @@ import authRoute from './routes/auth.route.js';
 import testRoute from './routes/test.route.js';
 import userRoute from './routes/user.route.js';
 import listingRoute from './routes/listing.route.js';
+import cloudinaryRoute from './routes/cloudinary.route.js';
+import blogRoute from './routes/blog.route.js';
 
 const app = express();
 
@@ -17,32 +19,44 @@ const allowedOrigins = [
   'http://localhost:5173',
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow cookies
+};
+app.use(cors(corsOptions));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Routes
 app.use('/api/auth/', authRoute);
 app.use('/api/test/', testRoute);
 app.use('/api/user/', userRoute);
 app.use('/api/listing/', listingRoute);
-
+app.use('/api/cloudinary/', cloudinaryRoute);
+app.use('/api/blog/', blogRoute);
 // Test server
 app.get('/test', (req, res) => {
   res.json({ message: 'hello world' });
 });
 
-app.listen(8800, () => {
-  console.log('Server is running at 8800!');
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || 'Internal Server Error' });
+});
+
+// Start server
+const PORT = process.env.PORT || 8800;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}!`);
 });

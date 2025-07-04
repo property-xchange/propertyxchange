@@ -1,18 +1,18 @@
 import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LuLayoutDashboard } from 'react-icons/lu';
-import { FaListUl } from 'react-icons/fa';
-import { MdOutlineAutoGraph } from 'react-icons/md';
+import { FaListUl, FaBlog, FaUsers } from 'react-icons/fa';
+import { MdOutlineAutoGraph, MdCategory } from 'react-icons/md';
 import { CgProfile } from 'react-icons/cg';
 import { FaListCheck } from 'react-icons/fa6';
 import { LuTicket } from 'react-icons/lu';
 import { TiMessages } from 'react-icons/ti';
-import { FaRegHeart } from 'react-icons/fa';
+import { FaRegHeart, FaEdit, FaComments } from 'react-icons/fa';
 import { CgWebsite } from 'react-icons/cg';
 import { IoMdLogOut } from 'react-icons/io';
+import { BsHouseAdd, BsPencilSquare } from 'react-icons/bs';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleSidebar } from '../../redux/features/toggleSlice';
-import { BsHouseAdd } from 'react-icons/bs';
 import Avatar from '../../assets/avatar.webp';
 import toast, { Toaster } from 'react-hot-toast';
 import { logout } from '../../helper/helper';
@@ -20,9 +20,7 @@ import { AuthContext } from '../../context/AuthContext';
 
 const Sidebar = ({ isFolded }) => {
   const navigate = useNavigate();
-  //fetching user data
   const { updateUser, currentUser } = useContext(AuthContext);
-
   const dispatch = useDispatch();
   const location = useLocation();
   const isLinkActive = (path) => location.pathname === path;
@@ -31,6 +29,8 @@ const Sidebar = ({ isFolded }) => {
   const handleToggleSidebar = () => {
     dispatch(toggleSidebar());
   };
+
+  console.log(currentUser);
 
   const handleLogout = async () => {
     try {
@@ -41,6 +41,118 @@ const Sidebar = ({ isFolded }) => {
       toast.error('Logout failed. Please try again.');
     }
   };
+
+  // Helper function to check if user has required role
+  const hasRole = (allowedRoles) => {
+    return allowedRoles.includes(currentUser?.role);
+  };
+
+  // Navigation items with role-based access
+  const navigationItems = [
+    {
+      path: '/dashboard',
+      icon: LuLayoutDashboard,
+      label: 'Dashboard',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+    },
+    {
+      path: '/profile',
+      icon: CgProfile,
+      label: 'Profile',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+    },
+    {
+      path: '/user-listings',
+      icon: FaListUl,
+      label: 'Properties',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+    },
+    {
+      path: '/saved-listings',
+      icon: FaRegHeart,
+      label: 'Saved Properties',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+    },
+    {
+      path: '/create-listing',
+      icon: BsHouseAdd,
+      label: 'Post a property',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+    },
+    // Blog Management
+    {
+      path: '/blog-management',
+      icon: FaBlog,
+      label: 'Blog Management',
+      roles: ['STAFF', 'ADMIN'],
+    },
+    {
+      path: '/create-blog',
+      icon: BsPencilSquare,
+      label: 'Create Blog Post',
+      roles: ['STAFF', 'ADMIN'],
+    },
+    {
+      path: '/blog-categories',
+      icon: MdCategory,
+      label: 'Blog Categories',
+      roles: ['ADMIN'],
+    },
+    {
+      path: '/blog-comments',
+      icon: FaComments,
+      label: 'Manage Comments',
+      roles: ['STAFF', 'ADMIN'],
+    },
+    // User Management (Admin only)
+    {
+      path: '/user-management',
+      icon: FaUsers,
+      label: 'User Management',
+      roles: ['ADMIN'],
+    },
+    // Other features
+    {
+      path: '/statistic',
+      icon: MdOutlineAutoGraph,
+      label: 'Statistics',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+      badge: 'Soon!',
+    },
+    {
+      path: '/leads',
+      icon: FaListCheck,
+      label: 'Manage Leads',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+      badge: 'Soon!',
+    },
+    {
+      path: '/subscription',
+      icon: LuTicket,
+      label: 'Subscription',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+      badge: 'Soon!',
+    },
+    {
+      path: '/inbox',
+      icon: TiMessages,
+      label: 'Inbox',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+      badge: 'Soon!',
+    },
+    {
+      path: '#',
+      icon: CgWebsite,
+      label: 'My Website',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+      badge: 'Soon!',
+    },
+  ];
+
+  // Filter navigation items based on user role
+  const filteredNavigation = navigationItems.filter((item) =>
+    hasRole(item.roles)
+  );
 
   return (
     <div>
@@ -66,190 +178,58 @@ const Sidebar = ({ isFolded }) => {
               <p className="mx-2 mt-1 text-sm font-medium text-gray-600 dark:text-gray-400">
                 {currentUser.email}
               </p>
+              {currentUser.role !== 'USER' && (
+                <span
+                  className={`px-2 py-1 text-xs rounded-full mt-1 ${
+                    currentUser.role === 'ADMIN'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                  }`}
+                >
+                  {currentUser.role}
+                </span>
+              )}
             </>
           )}
         </div>
 
-        <div
-          className={`flex flex-col justify-between mt-6 
-          }`}
-        >
+        <div className="flex flex-col justify-between mt-6">
           <nav>
-            <Link
-              className={`flex items-center px-4 py-2 ${
-                isLinkActive('/dashboard')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/dashboard"
-            >
-              <LuLayoutDashboard className="w-5 h-5" />
-              {!isFolded && <span className="mx-4 font-medium">Dashboard</span>}
-            </Link>
+            {filteredNavigation.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  className={`flex items-center px-4 py-2 mt-5 ${
+                    isLinkActive(item.path)
+                      ? 'text-white bg-blue-600'
+                      : 'text-gray-700 bg-white hover:bg-gray-100'
+                  } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
+                  to={item.path}
+                >
+                  <IconComponent className="w-5 h-5" />
+                  {!isFolded && (
+                    <>
+                      <span className="mx-4 font-medium">{item.label}</span>
+                      {item.badge && (
+                        <span className="text-[8px] bg-red-600 text-white p-1 font-bold rounded-md">
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Link>
+              );
+            })}
 
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/profile')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/profile"
-            >
-              <CgProfile className="h-5 w-5" />
-              {!isFolded && <span className="mx-4 font-medium">Profile</span>}
-            </Link>
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/user-listings')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/user-listings"
-            >
-              <FaListUl className="h-5 w-5" />
-              {!isFolded && (
-                <span className="mx-4 font-medium">Properties</span>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/saved-listings')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/saved-listings"
-            >
-              <FaRegHeart className="h-5 w-5" />
-              {!isFolded && (
-                <span className="mx-4 font-medium">Saved Properties</span>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/create-listing')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/create-listing"
-            >
-              <BsHouseAdd className="h-5 w-5" />
-              {!isFolded && (
-                <span className="mx-4 font-medium">Post a property</span>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/statistic')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/statistic"
-            >
-              <MdOutlineAutoGraph className="h-5 w-5" />
-              {!isFolded && (
-                <>
-                  <span className="mx-4 font-medium">Statistic</span>
-                  <span className="text-[8px] bg-red-600 text-white p-1 font-bold rounded-md">
-                    Soon!
-                  </span>
-                </>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/leads')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/leads"
-            >
-              <FaListCheck className="h-5 w-5" />
-              {!isFolded && (
-                <>
-                  <span className="mx-4 font-medium">Manage Leads</span>
-                  <span className="text-[8px] bg-red-600 text-white p-1 font-bold rounded-md">
-                    Soon!
-                  </span>
-                </>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/subscription')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/subscription"
-            >
-              <LuTicket className="h-5 w-5" />
-              {!isFolded && (
-                <>
-                  <span className="mx-4 font-medium">Subscription</span>
-                  <span className="text-[8px] bg-red-600 text-white p-1 font-bold rounded-md">
-                    Soon!
-                  </span>
-                </>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('/inbox')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="/inbox"
-            >
-              <TiMessages className="h-5 w-5" />
-              {!isFolded && (
-                <>
-                  <span className="mx-4 font-medium">Inbox</span>
-                  <span className="text-[8px] bg-red-600 text-white p-1 font-bold rounded-md">
-                    Soon!
-                  </span>
-                </>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('#')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
-              to="#"
-            >
-              <CgWebsite className="h-5 w-5" />
-              {!isFolded && (
-                <>
-                  <span className="mx-4 font-medium">My Website</span>
-                  <span className="text-[8px] bg-red-600 text-white p-1 font-bold rounded-md">
-                    Soon!
-                  </span>
-                </>
-              )}
-            </Link>
-
-            <Link
-              className={`flex items-center px-4 py-2 mt-5 ${
-                isLinkActive('#')
-                  ? 'text-white bg-blue-600'
-                  : 'text-gray-700 bg-white hover:bg-gray-100'
-              } transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
+            {/* Logout */}
+            <button
+              className={`flex items-center w-full px-4 py-2 mt-5 text-gray-700 bg-white hover:bg-gray-100 transition-colors duration-300 transform rounded-lg dark:bg-gray-800 dark:text-gray-200`}
               onClick={handleLogout}
             >
               <IoMdLogOut className="h-5 w-5" />
-              {!isFolded && (
-                <>
-                  <span className="mx-4 font-medium">Logout</span>
-                </>
-              )}
-            </Link>
+              {!isFolded && <span className="mx-4 font-medium">Logout</span>}
+            </button>
           </nav>
         </div>
       </aside>

@@ -1,5 +1,5 @@
-import { FiArrowRight } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { FiArrowRight } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 const SingleBlogCard = ({
   id,
@@ -13,7 +13,7 @@ const SingleBlogCard = ({
   return (
     <div className="mb-8 group">
       <div className="!opacity-100 rounded-lg overflow-hidden">
-        <Link to={`/bolg/${id}`} className="!opacity-100">
+        <Link to={`/blog/${id}`} className="!opacity-100">
           <img
             src={image}
             alt={title}
@@ -40,7 +40,7 @@ const SingleBlogCard = ({
         </Link>
         <p className="mt-3">{description.slice(0, 250)}...</p>
         <Link className="mt-4 flex-align-center gap-x-2 hover:underline text-primary">
-          <span className="uppercase hover:underline">read more</span>{" "}
+          <span className="uppercase hover:underline">read more</span>{' '}
           <FiArrowRight />
         </Link>
       </div>

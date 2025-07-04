@@ -4,7 +4,7 @@ import {
   VERIFICATION_EMAIL_TEMPLATE,
   WELCOME_EMAIL_TEMPLATE,
 } from './emailTemplates.js';
-import { sender, transporter, welcomeTransporter } from './mail.config.js';
+import { sender, transporter } from './mail.config.js';
 
 export const sendVerificationEmail = async (email, verificationToken) => {
   //const recipient = [{ email }];
@@ -33,7 +33,7 @@ export const sendWelcomeEmail = async (email, name) => {
   //const recipient = [{ email }];
 
   try {
-    const response = await welcomeTransporter.sendMail({
+    const response = await transporter.sendMail({
       from: sender,
       to: email,
       subject: 'Welcome to PropertyXchange',

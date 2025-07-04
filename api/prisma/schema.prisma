@@ -9,128 +9,330 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"  
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
+enum AccountType {
+  INDIVIDUAL
+  COMPANY
+  AGENT
+  DEVELOPER
+  INVESTOR
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+  EXPIRED
+}
+
+enum ListingCategory {
+  RENT
+  SALE
+  JOINT_VENTURE
+  SHORT_LET
+}
+
+enum PropertyType {
+  CO_WORKING_SPACE
+  COMMERCIAL_PROPERTY
+  FLAT_APARTMENT
+  HOUSE
+  LAND
+}
+
+enum PropertySubType {
+  // Co-working Space
+  CONFERENCE_ROOM
+  DESK
+  MEETING_ROOM
+  PRIVATE_OFFICE
+  WORKSTATION
+
+  // Commercial Property
+  CHURCH
+  EVENT_CENTER
+  FACTORY
+  FILLING_STATION
+  HOTEL_GUEST_HOUSE
+  OFFICE_SPACE
+  SCHOOL
+  SHOP
+  SHOP_IN_MALL
+  SHOW_ROOM
+  TANK_FARM
+  WAREHOUSE
+
+  // Flat/Apartment
+  BOYS_QUARTER
+  MINI_FLAT
+  PENTHOUSE
+  SELF_CONTAIN
+  SHARED_APARTMENT
+  STUDIO_APARTMENT
+
+  // House
+  BLOCK_OF_FLATS
+  DETACHED_BUNGALOW
+  DETACHED_DUPLEX
+  MASSIONETTE
+  SEMI_DETACHED_BUNGALOW
+  SEMI_DETACHED_DUPLEX
+  TERRACED_BUNGALOW
+  TERRACED_DUPLEX
+
+  // Land
+  COMMERCIAL_LAND
+  INDUSTRIAL_LAND
+  JOINT_VENTURE_LAND
+  MIXED_USE_LAND
+  RESIDENTIAL_LAND
+  SERVICED_RESIDENTIAL_LAND
+}
+
+enum NotificationType {
+  NEW_LISTING
+  LISTING_APPROVED
+  LISTING_REJECTED
+  NEW_BLOG
+  BLOG_COMMENT
+  USER_REGISTERED
+  REVIEW_SUBMITTED
+  GENERAL
+}
+
+enum Role {
+  USER
+  STAFF
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+  SUSPENDED
+}
+
+model ListingReview {
+  id         String  @id @default(cuid()) @map("_id")
+  rating     Int // 1-5 stars
+  comment    String
+  isApproved Boolean @default(false)
+
+  // Relations
+  listingId String  @db.ObjectId
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  authorId  String  @db.ObjectId
+  author    User    @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([listingId, authorId]) // One review per user per listing
+}
+
 model Listing {
- id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  price            Float
-  purpose          String
-  verification     Boolean      @default(false)
-  number_of_beds   Int?
+  id                  String          @id @default(auto()) @map("_id") @db.ObjectId
+  slug                String          @unique
+  status              ListingStatus   @default(PENDING)
+  metaTitle           String?
+  metaDescription     String?
+  metaKeywords        String[]
+  approvedBy          String?         @db.ObjectId
+  approvedAt          DateTime?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  name                String
+  price               Float
+  verification        Boolean         @default(false)
+  number_of_beds      Int?
   number_of_bathrooms Int?
-  toilets               Int?  
-  latitude  String?
-  longitude   String?
-  discountPercent  Float?
-  discountPrice Float?
-  discountEndDate  DateTime?  
-  installment Boolean?
-  appendTo  String?
-  installmentAppendTo  String?
-  initialPayment Float?
-  monthlyPayment Float?
-  duration Int?
-  furnished Boolean?
-  serviced Boolean?
-  newlyBuilt Boolean?
-  parking Boolean?
-  offer Boolean?
-  youtubeLink String?
-  instagramLink     String? 
-  type             String
-  subType String?
-  features String[]
-  street String
-  lga String
-  state String
-  description String
-  thumbnail String?  
-  images           String[]
-  createdAt  DateTime    @default(now())
-  updatedAt   DateTime?
-  user       User        @relation(fields: [userId], references: [id])
-  userId     String      @db.ObjectId
-  savedListing  SavedListing[]
+  toilets             Int?
+  latitude            String?
+  longitude           String?
+  discountPercent     Float?
+  discountPrice       Float?
+  discountEndDate     DateTime?
+  installment         Boolean?
+  appendTo            String?
+  installmentAppendTo String?
+  initialPayment      Float?
+  monthlyPayment      Float?
+  duration            Int?
+  furnished           Boolean?
+  serviced            Boolean?
+  newlyBuilt          Boolean?
+  parking             Boolean?
+  offer               Boolean?
+  youtubeLink         String?
+  instagramLink       String?
+  features            String[]
+  street              String
+  lga                 String
+  state               String
+  description         String
+  thumbnail           String?
+  images              String[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime?
+  purpose             ListingCategory
+  type                PropertyType
+  subType             PropertySubType
+
+  // Relations
+  approver     User?           @relation("ApprovedListings", fields: [approvedBy], references: [id])
+  reviews      ListingReview[]
+  user         User            @relation(fields: [userId], references: [id])
+  userId       String          @db.ObjectId
+  savedListing SavedListing[]
+}
+
+model Notification {
+  id         String           @id @default(cuid()) @map("_id")
+  title      String
+  message    String
+  type       NotificationType
+  entityType String? // 'listing', 'blog', 'user', 'comment'
+  entityId   String?
+  isRead     Boolean          @default(false)
+
+  // Relations
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SavedListing {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
-  listing    Listing     @relation(fields: [listingId], references: [id])
+  listing   Listing  @relation(fields: [listingId], references: [id])
   userId    String   @unique @db.ObjectId
-  listingId    String   @unique @db.ObjectId
+  listingId String   @unique @db.ObjectId
   createdAt DateTime @default(now())
 
   @@unique([userId, listingId])
 }
 
 model User {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  email      String      @unique
-  username   String      
-  password   String
-  profilePhoto     String?
-  firstName String?
-  lastName String?
-  phoneNumber String?
-  whatsAppNum String?
-  accountType String?
-  address String?
-  lga String?
-  state String?
-  title String?
-  role String  @default("user")
-  verified Boolean  @default(false)
-  emailVerified Boolean  @default(false)
-  companyName String?
-  companyNumber String?
-  aboutCompany String?
-  companyEmail String? 
-  companyPhoto String?
-  services String?
-  instagramLink String?
-  linkedInLink String?
-  twitterLink String?
-  facebookLink String?
-  lastLogin DateTime?
-  resetPasswordToken   String?
-  resetPasswordExpiredAt  DateTime?
-  verificationToken         String?
+  id                         String      @id @default(auto()) @map("_id") @db.ObjectId
+  email                      String      @unique
+  username                   String
+  password                   String
+  profilePhoto               String?
+  firstName                  String?
+  lastName                   String?
+  phoneNumber                String?
+  whatsAppNum                String?
+  accountType                AccountType @default(INDIVIDUAL)
+  address                    String?
+  lga                        String?
+  state                      String?
+  title                      String?
+  role                       Role        @default(USER)
+  status                     UserStatus  @default(ACTIVE)
+  verified                   Boolean     @default(false)
+  emailVerified              Boolean     @default(false)
+  companyNumber              String?
+  aboutCompany               String?
+  companyEmail               String?
+  companyPhoto               String?
+  services                   String?
+  instagramLink              String?
+  linkedInLink               String?
+  twitterLink                String?
+  facebookLink               String?
+  lastLogin                  DateTime?
+  resetPasswordToken         String?
+  resetPasswordExpiredAt     DateTime?
+  verificationToken          String?
   verificationTokenExpiredAt DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt   DateTime? 
-  listings Listing[]
-  savedlisting SavedListing[]
-  blogs  Blog[]
+  bannedAt                   DateTime?
+  bannedReason               String?
+  bannedBy                   String?     @db.ObjectId
+  createdAt                  DateTime    @default(now())
+  updatedAt                  DateTime?
+
+  // Company/Business fields
+  companyName        String?
+  companyRegNumber   String?
+  companyRegDocument String? // File URL
+  businessLicense    String? // File URL
+  taxCertificate     String? // File URL
+
+  // Profile completion tracking
+  profileCompleted      Boolean @default(false)
+  profileCompletionStep Int     @default(0)
+
+  savedlisting  SavedListing[]
+  blogs         Blog[]
+  blogComments  BlogComment[]
+  ListingReview ListingReview[]
+  Listing       Listing[]
+  Notification  Notification[]
+
+  // Opposite relation for approved listings
+  ApprovedListings Listing[] @relation("ApprovedListings")
 }
-      
+
 model BlogCategory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String   @unique
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique
+  slug        String    @unique
   description String?
-  blogs       Blog[]   @relation("CategoryBlogs")
-  createdAt   DateTime @default(now())
+  color       String?   @default("#3B82F6")
+  isActive    Boolean   @default(true)
+  blogs       Blog[]    @relation("CategoryBlogs")
+  createdAt   DateTime  @default(now())
   updatedAt   DateTime?
 }
 
 model Blog {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  slug        String       @unique
-  content     String
-  seoTitle    String?
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  slug           String        @unique
+  content        String
+  excerpt        String?
+  seoTitle       String?
   seoDescription String?
-  isFeatured  Boolean      @default(false)
-  images      String[]
-  tags        String[]
-  author      User         @relation(fields: [authorId], references: [id])
-  authorId    String       @db.ObjectId
-  category    BlogCategory @relation("CategoryBlogs", fields: [categoryId], references: [id])
-  categoryId  String       @db.ObjectId
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime?
+  metaKeywords   String[]
+  readingTime    Int? // in minutes
+  viewCount      Int           @default(0)
+  isFeatured     Boolean       @default(false)
+  isPublished    Boolean       @default(false)
+  publishedAt    DateTime?
+  featuredImage  String?
+  images         String[]
+  tags           String[]
+  author         User          @relation(fields: [authorId], references: [id])
+  authorId       String        @db.ObjectId
+  category       BlogCategory  @relation("CategoryBlogs", fields: [categoryId], references: [id])
+  categoryId     String        @db.ObjectId
+  comments       BlogComment[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime?
+
+  @@index([isPublished, publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
 }
 
+model BlogComment {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  content    String
+  author     User      @relation(fields: [authorId], references: [id])
+  authorId   String    @db.ObjectId
+  blog       Blog      @relation(fields: [blogId], references: [id])
+  blogId     String    @db.ObjectId
+  parentId   String?   @db.ObjectId
+  isApproved Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime?
+
+  @@index([blogId])
+  @@index([authorId])
+}
