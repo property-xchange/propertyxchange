@@ -3,13 +3,13 @@ import { BiLogoInstagramAlt } from 'react-icons/bi';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { Upload, Image, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import UploadWidget from '../../common/page-components/UploadWidget.jsx';
+import UploadWidget from '../../../common/page-components/UploadWidget.jsx';
 import {
   extractPublicIdFromUrl,
   deleteFromCloudinary,
   isCloudinaryUrl,
   getOptimizedUrl,
-} from '../../../helper/cloudinaryHelper.js';
+} from '../../../../helper/cloudinaryHelper.js';
 import toast from 'react-hot-toast';
 
 const MediaStep = ({

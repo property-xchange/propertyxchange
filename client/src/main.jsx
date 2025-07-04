@@ -24,10 +24,12 @@ import {
   Register,
   Password,
   Property,
+  Profile,
   SignIn,
   Services,
   ResetPassword,
   SingleProperty,
+  CreateListing,
 } from './pages';
 import {
   PublicLayout,
@@ -40,13 +42,7 @@ import {
   propertyLoader,
   singlePropertyLoader,
 } from './helper/loader';
-import {
-  SaveProperty,
-  UserListing,
-  CreateListing,
-  Profile,
-  Dashboard,
-} from './components/dashboard';
+import { SaveProperty, UserListing, Dashboard } from './components/dashboard';
 
 // IMPORT THE NEW BLOG AND ADMIN COMPONENTS
 import BlogManagement from './components/dashboard/BlogManagement.jsx';

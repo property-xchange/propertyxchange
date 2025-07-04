@@ -1,4 +1,4 @@
-import TextEditor from '../../common/page-components/TextEditor';
+import TextEditor from '../../../common/page-components/TextEditor';
 
 const BasicInfoStep = ({
   formData,

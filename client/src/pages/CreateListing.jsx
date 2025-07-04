@@ -2,29 +2,29 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Check, MapPin } from 'lucide-react';
-import Dashboard from './Dashboard.jsx';
+import Dashboard from '../components/dashboard/Dashboard.jsx';
 import toast, { Toaster } from 'react-hot-toast';
-import apiRequest from '../../helper/apiRequest.js';
+import apiRequest from '../helper/apiRequest.js';
 
 // Import separate step components
-import BasicInfoStep from './steps/BasicInfoStep.jsx';
-import FeaturesStep from './steps/FeaturesStep.jsx';
-import LocationStep from './steps/LocationStep.jsx';
-import PricingStep from './steps/PricingStep.jsx';
-import MediaStep from './steps/MediaStep.jsx';
-import ReviewStep from './steps/ReviewStep.jsx';
+import BasicInfoStep from '../components/dashboard/steps/create-listings/BasicInfoStep.jsx';
+import FeaturesStep from '../components/dashboard/steps/create-listings/FeaturesStep.jsx';
+import LocationStep from '../components/dashboard/steps/create-listings/LocationStep.jsx';
+import PricingStep from '../components/dashboard/steps/create-listings/PricingStep.jsx';
+import MediaStep from '../components/dashboard/steps/create-listings/MediaStep.jsx';
+import ReviewStep from '../components/dashboard/steps/create-listings/ReviewStep.jsx';
 
 // Import data and helpers
 import {
   locationData,
   listingType,
   listingFeatures,
-} from '../../data/dummyData.js';
+} from '../data/dummyData.js';
 import {
   validateYouTubeLink,
   validateInstagramLink,
-} from '../../helper/validate.js';
-import { getCurrentLocation } from '../../helper/locationHelper.js';
+} from '../helper/validate.js';
+import { getCurrentLocation } from '../helper/locationHelper.js';
 
 export default function CreateListing() {
   const navigate = useNavigate();
