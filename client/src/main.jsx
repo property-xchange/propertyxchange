@@ -50,6 +50,7 @@ import CreateEditBlog from './components/blog/CreateEditBlog.jsx';
 import BlogList from './components/blog/BlogList.jsx';
 import SingleBlog from './components/blog/SingleBlog.jsx';
 import UserManagement from './components/dashboard/UserManagement.jsx';
+import ListingManagement from './components/dashboard/ListingManagement.jsx';
 import BlogCategories from './components/dashboard/BlogCategories.jsx';
 import BlogComments from './components/blog/BlogComments';
 
@@ -117,6 +118,7 @@ const router = createBrowserRouter([
           { path: '/create-blog', element: <CreateEditBlog /> },
           { path: '/edit-blog/:id', element: <CreateEditBlog /> },
           { path: '/blog-comments', element: <BlogComments /> },
+          { path: '/listing-management', element: <ListingManagement /> },
         ],
       },
       {

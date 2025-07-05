@@ -56,10 +56,10 @@ const Sidebar = ({ isFolded }) => {
       roles: ['USER', 'STAFF', 'ADMIN'],
     },
     {
-      path: '/profile',
-      icon: CgProfile,
-      label: 'Profile',
-      roles: ['USER', 'STAFF', 'ADMIN'],
+      path: '/listing-management',
+      icon: FaEdit,
+      label: 'Listing Management',
+      roles: ['STAFF', 'ADMIN'],
     },
     {
       path: '/user-listings',
@@ -86,6 +86,7 @@ const Sidebar = ({ isFolded }) => {
       label: 'Blog Management',
       roles: ['STAFF', 'ADMIN'],
     },
+
     {
       path: '/create-blog',
       icon: BsPencilSquare,
@@ -110,6 +111,13 @@ const Sidebar = ({ isFolded }) => {
       icon: FaUsers,
       label: 'User Management',
       roles: ['ADMIN'],
+    },
+
+    {
+      path: '/profile',
+      icon: CgProfile,
+      label: 'Profile',
+      roles: ['USER', 'STAFF', 'ADMIN'],
     },
     // Other features
     {
