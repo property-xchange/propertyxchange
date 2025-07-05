@@ -4,7 +4,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "build": "prisma generate",
+    "build": "prisma generate && prisma db push",
     "start": "node app.js",
     "dev": "nodemon app.js",
     "postinstall": "prisma generate"

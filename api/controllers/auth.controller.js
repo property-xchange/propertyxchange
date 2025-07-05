@@ -24,7 +24,7 @@ export const register = async (req, res) => {
       where: { email },
     });
 
-    console.log('Query Result: ', userAlreadyExist);
+    // console.log('Query Result: ', userAlreadyExist);
 
     // If user exists and is not verified, allow resending verification email
     if (userAlreadyExist && !userAlreadyExist.emailVerified) {

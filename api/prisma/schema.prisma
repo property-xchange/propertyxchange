@@ -15,10 +15,12 @@ datasource db {
 
 enum AccountType {
   INDIVIDUAL
-  COMPANY
-  AGENT
+  LAW
+  SURVEY
+  ORGANIZATION
   DEVELOPER
   INVESTOR
+  OTHER
 }
 
 enum ListingStatus {
