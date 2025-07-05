@@ -4,34 +4,46 @@ import { User, Building, Scale, MapPin, Users } from 'lucide-react';
 const AccountTypeStep = ({ accountType, handleCheckboxChange }) => {
   const accountTypes = [
     {
-      id: 'individual',
+      id: 'INDIVIDUAL',
       label: 'Individual Agent',
       icon: User,
       description: 'For individual real estate agents',
     },
     {
-      id: 'developer',
+      id: 'DEVELOPER',
       label: 'Developer',
       icon: Building,
       description: 'For property developers',
     },
     {
-      id: 'law',
+      id: 'LAW',
       label: 'Law Firm',
       icon: Scale,
       description: 'For legal firms dealing with real estate',
     },
     {
-      id: 'survey',
+      id: 'SURVEY',
       label: 'Estate Surveying Firm',
       icon: MapPin,
       description: 'For property surveying companies',
     },
     {
-      id: 'organization',
+      id: 'ORGANIZATION',
       label: 'Real Estate Organization',
       icon: Users,
       description: 'For real estate organizations',
+    },
+    {
+      id: 'INVESTOR',
+      label: 'Investor',
+      icon: Scale,
+      description: 'For real estate investors',
+    },
+    {
+      id: 'OTHER',
+      label: 'Other',
+      icon: User,
+      description: 'For any other type of real estate agent',
     },
   ];
 
