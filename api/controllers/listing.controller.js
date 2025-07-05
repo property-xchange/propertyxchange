@@ -228,6 +228,92 @@ export const getListing = async (req, res) => {
   }
 };
 
+// export const addListing = async (req, res) => {
+//   const body = req.body;
+//   const tokenUserId = req.userId;
+
+//   try {
+//     // Check if user profile is completed (for USER role only)
+//     const user = await prisma.user.findUnique({
+//       where: { id: tokenUserId },
+//       select: {
+//         role: true,
+//         profileCompleted: true,
+//         phoneNumber: true,
+//         whatsAppNum: true,
+//         accountType: true,
+//         address: true,
+//         lga: true,
+//         state: true,
+//         companyRegDocument: true,
+//       },
+//     });
+
+//     if (user.role === 'USER' && !user.profileCompleted) {
+//       const requiredFields = [
+//         'phoneNumber',
+//         'whatsAppNum',
+//         'accountType',
+//         'address',
+//         'lga',
+//         'state',
+//       ];
+//       const missingFields = requiredFields.filter((field) => !user[field]);
+
+//       // For company/business accounts, check for registration documents
+//       if (user.accountType !== 'INDIVIDUAL' && !user.companyRegDocument) {
+//         missingFields.push('companyRegDocument');
+//       }
+
+//       if (missingFields.length > 0) {
+//         return res.status(400).json({
+//           message: 'Please complete your profile before creating listings',
+//           missingFields,
+//           redirectTo: '/profile',
+//         });
+//       }
+//     }
+
+//     // Generate slug
+//     const slug = generateSlug(body.name, body.type, body.lga);
+
+//     const newListing = await prisma.listing.create({
+//       data: {
+//         ...body,
+//         slug,
+//         userId: tokenUserId,
+//         status: user.role === 'USER' ? 'PENDING' : 'APPROVED', // Auto-approve for staff/admin
+//       },
+//     });
+
+//     // Create notification for admins/staff about new listing
+//     if (user.role === 'USER') {
+//       const adminsAndStaff = await prisma.user.findMany({
+//         where: {
+//           role: { in: ['ADMIN', 'STAFF'] },
+//         },
+//         select: { id: true },
+//       });
+
+//       for (const admin of adminsAndStaff) {
+//         await createNotification(
+//           admin.id,
+//           'New Listing Submitted',
+//           `A new property listing "${body.name}" has been submitted for review`,
+//           'NEW_LISTING',
+//           'listing',
+//           newListing.id
+//         );
+//       }
+//     }
+
+//     res.status(200).json(newListing);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ message: 'Failed to create Listing' });
+//   }
+// };
+
 export const addListing = async (req, res) => {
   const body = req.body;
   const tokenUserId = req.userId;
@@ -260,7 +346,6 @@ export const addListing = async (req, res) => {
       ];
       const missingFields = requiredFields.filter((field) => !user[field]);
 
-      // For company/business accounts, check for registration documents
       if (user.accountType !== 'INDIVIDUAL' && !user.companyRegDocument) {
         missingFields.push('companyRegDocument');
       }
@@ -274,16 +359,152 @@ export const addListing = async (req, res) => {
       }
     }
 
+    // Convert enum values to match Prisma schema exactly
+    const purposeMap = {
+      sale: 'SALE',
+      rent: 'RENT',
+      'short-let': 'SHORT_LET',
+      'joint-venture': 'JOINT_VENTURE',
+    };
+
+    const typeMap = {
+      'co-working space': 'CO_WORKING_SPACE',
+      'commercial property': 'COMMERCIAL_PROPERTY',
+      'flat/apartment': 'FLAT_APARTMENT',
+      house: 'HOUSE',
+      land: 'LAND',
+    };
+
+    // Complete SubType mapping based on your Prisma schema
+    const subTypeMap = {
+      // Co-working Space
+      'conference room': 'CONFERENCE_ROOM',
+      desk: 'DESK',
+      'meeting room': 'MEETING_ROOM',
+      'private office': 'PRIVATE_OFFICE',
+      workstation: 'WORKSTATION',
+
+      // Commercial Property
+      church: 'CHURCH',
+      'event center': 'EVENT_CENTER',
+      factory: 'FACTORY',
+      'filling station': 'FILLING_STATION',
+      'hotel guest house': 'HOTEL_GUEST_HOUSE',
+      'office space': 'OFFICE_SPACE',
+      school: 'SCHOOL',
+      shop: 'SHOP',
+      'shop in mall': 'SHOP_IN_MALL',
+      'show room': 'SHOW_ROOM',
+      'tank farm': 'TANK_FARM',
+      warehouse: 'WAREHOUSE',
+
+      // Flat/Apartment
+      'boys quarter': 'BOYS_QUARTER',
+      'mini flat': 'MINI_FLAT',
+      'mini-flat': 'MINI_FLAT',
+      penthouse: 'PENTHOUSE',
+      'self contain': 'SELF_CONTAIN',
+      'shared apartment': 'SHARED_APARTMENT',
+      'studio apartment': 'STUDIO_APARTMENT',
+
+      // House
+      'block of flats': 'BLOCK_OF_FLATS',
+      'detached bungalow': 'DETACHED_BUNGALOW',
+      'detached duplex': 'DETACHED_DUPLEX',
+      massionette: 'MASSIONETTE',
+      'semi detached bungalow': 'SEMI_DETACHED_BUNGALOW',
+      'semi detached duplex': 'SEMI_DETACHED_DUPLEX',
+      'terraced bungalow': 'TERRACED_BUNGALOW',
+      'terraced duplex': 'TERRACED_DUPLEX',
+
+      // Land
+      'commercial land': 'COMMERCIAL_LAND',
+      'industrial land': 'INDUSTRIAL_LAND',
+      'joint venture land': 'JOINT_VENTURE_LAND',
+      'mixed use land': 'MIXED_USE_LAND',
+      'residential land': 'RESIDENTIAL_LAND',
+      'serviced residential land': 'SERVICED_RESIDENTIAL_LAND',
+    };
+
+    const mappedPurpose =
+      purposeMap[body.purpose.toLowerCase()] || body.purpose.toUpperCase();
+    const mappedType =
+      typeMap[body.type.toLowerCase()] ||
+      body.type.toUpperCase().replace(/[^A-Z]/g, '_');
+    const mappedSubType = body.subType
+      ? subTypeMap[body.subType.toLowerCase()] ||
+        body.subType.toUpperCase().replace(/[^A-Z]/g, '_')
+      : null;
+
+    console.log('Original values:', {
+      purpose: body.purpose,
+      type: body.type,
+      subType: body.subType,
+    });
+    console.log('Mapped values:', {
+      purpose: mappedPurpose,
+      type: mappedType,
+      subType: mappedSubType,
+    });
+
     // Generate slug
     const slug = generateSlug(body.name, body.type, body.lga);
 
+    // Prepare listing data
+    const listingData = {
+      name: body.name,
+      price: parseFloat(body.price),
+      purpose: mappedPurpose,
+      type: mappedType,
+      number_of_beds: parseInt(body.number_of_beds) || 0,
+      number_of_bathrooms: parseInt(body.number_of_bathrooms) || 0,
+      toilets: parseInt(body.toilets) || 0,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      discountPercent: body.discountPercent
+        ? parseFloat(body.discountPercent)
+        : null,
+      discountPrice: body.discountPrice ? parseFloat(body.discountPrice) : null,
+      discountEndDate: body.discountEndDate
+        ? new Date(body.discountEndDate)
+        : null,
+      installment: Boolean(body.installment),
+      appendTo: body.appendTo || null,
+      installmentAppendTo: body.installmentAppendTo || null,
+      initialPayment: body.initialPayment
+        ? parseFloat(body.initialPayment)
+        : null,
+      monthlyPayment: body.monthlyPayment
+        ? parseFloat(body.monthlyPayment)
+        : null,
+      duration: body.duration ? parseInt(body.duration) : null,
+      furnished: Boolean(body.furnished),
+      serviced: Boolean(body.serviced),
+      newlyBuilt: Boolean(body.newlyBuilt),
+      parking: Boolean(body.parking),
+      offer: Boolean(body.offer),
+      youtubeLink: body.youtubeLink || null,
+      instagramLink: body.instagramLink || null,
+      features: body.features || [],
+      street: body.street,
+      lga: body.lga,
+      state: body.state,
+      description: body.description,
+      images: body.images || [],
+      slug,
+      userId: tokenUserId,
+      status: user.role === 'USER' ? 'PENDING' : 'APPROVED',
+    };
+
+    // Only add subType if it exists and is mapped
+    if (mappedSubType) {
+      listingData.subType = mappedSubType;
+    }
+
+    console.log('Final listing data:', listingData);
+
     const newListing = await prisma.listing.create({
-      data: {
-        ...body,
-        slug,
-        userId: tokenUserId,
-        status: user.role === 'USER' ? 'PENDING' : 'APPROVED', // Auto-approve for staff/admin
-      },
+      data: listingData,
     });
 
     // Create notification for admins/staff about new listing
@@ -309,8 +530,26 @@ export const addListing = async (req, res) => {
 
     res.status(200).json(newListing);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to create Listing' });
+    console.log('Create listing error:', err);
+    console.log('Error stack:', err.stack);
+
+    // More specific error handling
+    if (err.code === 'P2002') {
+      return res
+        .status(400)
+        .json({ message: 'A listing with this slug already exists' });
+    }
+
+    if (err.code === 'P2003') {
+      return res
+        .status(400)
+        .json({ message: 'Invalid reference data provided' });
+    }
+
+    res.status(500).json({
+      message: 'Failed to create listing',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
   }
 };
 

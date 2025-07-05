@@ -57,7 +57,7 @@ export const router = createBrowserRouter([
           { path: '/blog/:slug', element: <SingleBlog /> },
           { path: '/property', element: <Property />, loader: propertyLoader },
           {
-            path: '/property/:id',
+            path: '/property/:slug',
             element: <SingleProperty />,
             loader: singlePropertyLoader,
           },

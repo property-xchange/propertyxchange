@@ -30,7 +30,7 @@ const Sidebar = ({ isFolded }) => {
     dispatch(toggleSidebar());
   };
 
-  console.log(currentUser);
+  // console.log(currentUser);
 
   const handleLogout = async () => {
     try {

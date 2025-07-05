@@ -268,6 +268,58 @@ export default function CreateListing() {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+
+  //   try {
+  //     const payload = {
+  //       name: formData.name,
+  //       price: parseFloat(formData.price),
+  //       purpose,
+  //       number_of_beds: parseInt(formData.number_of_beds),
+  //       number_of_bathrooms: parseInt(formData.number_of_bathrooms),
+  //       toilets: parseInt(formData.toilets),
+  //       latitude: formData.latitude,
+  //       longitude: formData.longitude,
+  //       discountPercent: parseFloat(discountPercentage),
+  //       discountPrice: parseFloat(discountPrice),
+  //       discountEndDate: formData.discountEndDate
+  //         ? new Date(formData.discountEndDate + 'T00:00:00Z').toISOString()
+  //         : null,
+  //       installment: showInstallment,
+  //       appendTo: formData.appendTo,
+  //       installmentAppendTo: formData.installmentAppendTo,
+  //       initialPayment: parseFloat(formData.initialPayment),
+  //       monthlyPayment: parseFloat(formData.monthlyPayment),
+  //       duration: parseInt(formData.duration),
+  //       furnished: isFurnished,
+  //       serviced: isServiced,
+  //       newlyBuilt: isNewlyBuilt,
+  //       parking: hasParking,
+  //       offer: showDiscount,
+  //       youtubeLink: formData.youtubeLink,
+  //       instagramLink: formData.instagramLink,
+  //       type: selectedType,
+  //       subType: selectedSubType,
+  //       features: selectedFeatures,
+  //       street: formData.street,
+  //       lga: selectedLGA,
+  //       state: selectedState,
+  //       description: description,
+  //       images: images,
+  //     };
+
+  //     const res = await apiRequest.post('/listing', payload);
+  //     toast.success('Listing created successfully!');
+  //     navigate('/property/' + res.data.id);
+  //   } catch (err) {
+  //     toast.error(err.response?.data?.message || 'Failed to create listing');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -276,32 +328,32 @@ export default function CreateListing() {
       const payload = {
         name: formData.name,
         price: parseFloat(formData.price),
-        purpose,
+        purpose: purpose, // This should be lowercase as backend will handle conversion
         number_of_beds: parseInt(formData.number_of_beds),
         number_of_bathrooms: parseInt(formData.number_of_bathrooms),
         toilets: parseInt(formData.toilets),
         latitude: formData.latitude,
         longitude: formData.longitude,
-        discountPercent: parseFloat(discountPercentage),
-        discountPrice: parseFloat(discountPrice),
+        discountPercent: parseFloat(discountPercentage) || null,
+        discountPrice: parseFloat(discountPrice) || null,
         discountEndDate: formData.discountEndDate
           ? new Date(formData.discountEndDate + 'T00:00:00Z').toISOString()
           : null,
         installment: showInstallment,
-        appendTo: formData.appendTo,
-        installmentAppendTo: formData.installmentAppendTo,
-        initialPayment: parseFloat(formData.initialPayment),
-        monthlyPayment: parseFloat(formData.monthlyPayment),
-        duration: parseInt(formData.duration),
+        appendTo: formData.appendTo || null,
+        installmentAppendTo: formData.installmentAppendTo || null,
+        initialPayment: parseFloat(formData.initialPayment) || null,
+        monthlyPayment: parseFloat(formData.monthlyPayment) || null,
+        duration: parseInt(formData.duration) || null,
         furnished: isFurnished,
         serviced: isServiced,
         newlyBuilt: isNewlyBuilt,
         parking: hasParking,
         offer: showDiscount,
-        youtubeLink: formData.youtubeLink,
-        instagramLink: formData.instagramLink,
-        type: selectedType,
-        subType: selectedSubType,
+        youtubeLink: formData.youtubeLink || null,
+        instagramLink: formData.instagramLink || null,
+        type: selectedType, // This should be the display format as backend will handle conversion
+        subType: selectedSubType || null, // This should be the display format as backend will handle conversion
         features: selectedFeatures,
         street: formData.street,
         lga: selectedLGA,
@@ -310,10 +362,13 @@ export default function CreateListing() {
         images: images,
       };
 
+      console.log('Payload being sent:', payload);
+
       const res = await apiRequest.post('/listing', payload);
       toast.success('Listing created successfully!');
-      navigate('/property/' + res.data.id);
+      navigate('/property/' + res.data.slug);
     } catch (err) {
+      console.error('Error creating listing:', err);
       toast.error(err.response?.data?.message || 'Failed to create listing');
     } finally {
       setIsLoading(false);

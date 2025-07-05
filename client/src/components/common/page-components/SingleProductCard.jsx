@@ -8,6 +8,7 @@ import moment from 'moment';
 
 const SingleProductCard = ({
   id,
+  slug,
   name,
   street,
   price,
@@ -32,7 +33,7 @@ const SingleProductCard = ({
       } shadow-light dark:border-card-dark border rounded-lg overflow-hidden relative group`}
     >
       <div className="group !opacity-100 overflow-hidden relative">
-        <Link to={`/property/${id}`} className="!opacity-100">
+        <Link to={`/property/${slug}`} className="!opacity-100">
           <img
             src={images[0]}
             alt={name}
@@ -54,7 +55,7 @@ const SingleProductCard = ({
       />
       <div className="p-3">
         <Link
-          to={`/property/${id}`}
+          to={`/property/${slug}`}
           className="group-hover:text-primary transition-a"
         >
           <h1 className="text-lg font-bold capitalize">{name}</h1>
@@ -115,7 +116,7 @@ const SingleProductCard = ({
             </div>
           </div>
           <div>
-            <Link to={`/property/${id}`} className="btn btn-secondary">
+            <Link to={`/property/${slug}`} className="btn btn-secondary">
               details
             </Link>
           </div>

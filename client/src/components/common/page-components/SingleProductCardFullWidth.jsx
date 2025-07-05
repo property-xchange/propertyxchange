@@ -10,6 +10,7 @@ import moment from 'moment';
 
 const SingleProductCardFullWidth = ({
   id,
+  slug,
   name,
   street,
   price,
@@ -36,7 +37,7 @@ const SingleProductCardFullWidth = ({
     <div className="relative grid grid-cols-1 gap-3 mt-3 overflow-hidden border rounded-lg shadow-light sm:grid-cols-3 md:grid-cols-9 dark:border-card-dark group">
       <div className="sm:col-span-3">
         <div className="group !opacity-100 overflow-hidden relative h-full">
-          <Link to={`/property/${id}`} className="!opacity-100">
+          <Link to={`/property/${slug}`} className="!opacity-100">
             <img
               src={images[0]}
               alt={name}
@@ -52,7 +53,7 @@ const SingleProductCardFullWidth = ({
       <div className="sm:col-span-2 md:col-span-6">
         <div className="p-2 flex flex-col">
           <Link
-            to={`/property/${id}`}
+            to={`/property/${slug}`}
             className="group-hover:text-primary transition-a"
           >
             <h1 className="text-lg font-bold capitalize">{name}</h1>
@@ -175,7 +176,7 @@ const SingleProductCardFullWidth = ({
               </div>
             </div>
             <div>
-              <Link to={`/property/${id}`} className="btn btn-secondary">
+              <Link to={`/property/${slug}`} className="btn btn-secondary">
                 details
               </Link>
             </div>
