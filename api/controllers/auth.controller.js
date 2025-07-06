@@ -219,6 +219,7 @@ export const resendVerificationEmail = async (req, res) => {
   }
 };
 
+// Complete fixed login function:
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -258,9 +259,9 @@ export const login = async (req, res) => {
       });
     }
 
-    // GENERATE COOKIE TOKEN AND GET THE TOKEN
+    // GENERATE COOKIE TOKEN AND GET THE TOKEN - ADD req PARAMETER
     console.log('✅ Generating token for user ID:', user.id);
-    const token = generateTokenCookie(res, user.id);
+    const token = generateTokenCookie(res, user.id, req); // ← ADD req HERE
 
     // UPDATE LAST LOGIN DATE
     await prisma.user.update({
