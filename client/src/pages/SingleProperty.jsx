@@ -40,6 +40,7 @@ import Avatar from '../assets/avatar.webp';
 import moment from 'moment';
 import apiRequest from '../helper/apiRequest.js';
 import { AuthContext } from '../context/AuthContext';
+import DOMPurify from 'dompurify';
 
 const SingleProperty = () => {
   const listing = useLoaderData();
@@ -310,7 +311,11 @@ const SingleProperty = () => {
                 </TabList>
                 <TabPanels>
                   <TabPanel>
-                    <p>{listing.description}</p>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(listing.description),
+                      }}
+                    />
                   </TabPanel>
                   <TabPanel>
                     <YouTubeVideo youtubeLink={listing.youtubeLink} />

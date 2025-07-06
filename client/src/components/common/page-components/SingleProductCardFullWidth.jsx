@@ -63,10 +63,14 @@ const SingleProductCardFullWidth = ({
             <BiMap />
             <p>{street}</p>
           </div>
-          <p className="mt-2 text-sm">{`${description.slice(
-            0,
-            textLength || 180
-          )}...`}</p>
+          <div
+            className="mt-2 text-sm line-clamp-3 overflow-hidden"
+            dangerouslySetInnerHTML={{
+              __html: description?.length
+                ? `${description.slice(0, textLength || 180)}...`
+                : '',
+            }}
+          />
           <div className="flex justify-between mt-2 text-xs">
             <div className="flex-align-center gap-x-2">
               <div className="icon-box !w-7 !h-7 bg-primary/20 hover:!bg-primary/40 text-primary">

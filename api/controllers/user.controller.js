@@ -171,7 +171,7 @@ export const getAllUsersAdmin = async (req, res) => {
           bannedReason: true,
           _count: {
             select: {
-              listings: true,
+              Listing: true,
               blogs: true,
             },
           },
