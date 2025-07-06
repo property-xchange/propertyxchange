@@ -24,8 +24,6 @@ export const register = async (req, res) => {
       where: { email },
     });
 
-    // console.log('Query Result: ', userAlreadyExist);
-
     // If user exists and is not verified, allow resending verification email
     if (userAlreadyExist && !userAlreadyExist.emailVerified) {
       console.log(
@@ -111,13 +109,13 @@ export const register = async (req, res) => {
     console.log('User created:', user);
 
     // Generate and send a JWT cookie
-    generateTokenCookie(res, user._id);
+    generateTokenCookie(res, user.id);
 
     res.status(201).json({
       success: true,
       message: 'User created successfully. Please verify your email.',
       user: {
-        ...user._doc,
+        ...user,
         password: undefined,
       },
     });
@@ -156,13 +154,11 @@ export const verifyEmail = async (req, res) => {
 
     //await sendWelcomeEmail(user.email, user.username);
 
-    //console.log(user.email, user.username);
-
     res.status(200).json({
       success: true,
       message: 'Email verified successfully',
       user: {
-        ...user._doc,
+        ...user,
         password: undefined,
       },
     });
@@ -225,67 +221,124 @@ export const resendVerificationEmail = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
   try {
-    //console.log('Login attempt for email:', email);
+    console.log('🔐 Login attempt for email:', email);
 
     // CHECK IF THE USER EXISTS
     const user = await prisma.user.findUnique({
       where: { email },
     });
+
     if (!user) {
-      console.log('User not found with email:', email);
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid Credentials' });
+      console.log('❌ User not found with email:', email);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Credentials',
+      });
     }
 
     // CHECK IF THE USER IS VERIFIED
     if (!user.emailVerified) {
-      console.log('User email not verified:', email);
+      console.log('❌ User email not verified:', email);
       return res.status(400).json({
         success: false,
-        message: 'Email not verified',
+        message:
+          'Email not verified. Please check your inbox and verify your email.',
       });
     }
 
     // CHECK IF THE PASSWORD IS CORRECT
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      console.log('Password mismatch for email:', email);
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid Credentials!' });
+      console.log('❌ Password mismatch for email:', email);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Credentials!',
+      });
     }
-    //God is good
-    // GENERATE COOKIE TOKEN AND SEND TO THE USER
-    // console.log('Generating token cookie for user ID:', user.id);
-    generateTokenCookie(res, user.id);
+
+    // GENERATE COOKIE TOKEN AND GET THE TOKEN
+    console.log('✅ Generating token for user ID:', user.id);
+    const token = generateTokenCookie(res, user.id);
 
     // UPDATE LAST LOGIN DATE
     await prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() },
     });
-    //console.log('Last login date updated for user ID:', user.id);
 
-    const { password: removedPassword, ...noPassword } = user;
+    console.log('✅ Last login updated for user ID:', user.id);
 
+    // Remove password from response
+    const { password: removedPassword, ...userWithoutPassword } = user;
+
+    // RETURN TOKEN IN RESPONSE BODY FOR FRONTEND TO STORE IN LOCALSTORAGE
     res.status(200).json({
       success: true,
       message: 'Logged in successfully',
-      user: noPassword,
+      user: userWithoutPassword,
+      token,
+      debug: {
+        tokenGenerated: !!token,
+        tokenLength: token?.length,
+        userId: user.id,
+        cookieSet: true,
+      },
     });
   } catch (err) {
-    console.error('Error during login:', err);
-    res.status(500).json({ message: 'Failed to login!' });
+    console.error('❌ Error during login:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to login!',
+    });
   }
 };
 
-export const logout = (req, res) => {
-  res
-    .clearCookie('token')
-    .status(200)
-    .json({ success: true, message: 'Logout Successful' });
+export const logout = async (req, res) => {
+  try {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Get multiple domains from environment variable
+    const cookieDomains = process.env.COOKIE_DOMAINS
+      ? process.env.COOKIE_DOMAINS.split(',')
+      : [process.env.COOKIE_DOMAIN];
+
+    // Clear cookies for all domains
+    cookieDomains.forEach((domain) => {
+      if (domain) {
+        res.clearCookie('token', {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? 'none' : 'lax',
+          domain: domain.trim(),
+          path: '/',
+        });
+        console.log('🍪 Cookie cleared for domain:', domain.trim());
+      }
+    });
+
+    // Also clear without domain (for localhost)
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
+    });
+
+    console.log('🍪 All cookies cleared');
+
+    res.status(200).json({
+      success: true,
+      message: 'Logout Successful',
+    });
+  } catch (error) {
+    console.error('❌ Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Logout failed',
+    });
+  }
 };
 
 export const forgetPassword = async (req, res) => {
@@ -321,7 +374,6 @@ export const forgetPassword = async (req, res) => {
       message: 'Password reset link sent to your email',
     });
   } catch (error) {
-    //console.log('Error in forget password', error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -369,26 +421,102 @@ export const resetPassword = async (req, res) => {
 };
 
 export const checkAuth = async (req, res) => {
-  const { userId } = req;
-  //console.log('userId', userId);
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        id: req.userId,
-      },
+      where: { id: req.userId },
       select: {
-        password: false,
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        verified: true,
+        emailVerified: true,
+        profilePhoto: true,
+        companyName: true,
+        accountType: true,
+        lastLogin: true,
+        createdAt: true,
       },
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'user not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
     }
-    res.status(200).json({ success: true, user });
+
+    console.log('✅ Auth check successful for user:', user.id);
+
+    res.status(200).json({
+      success: true,
+      user,
+      authenticated: true,
+    });
   } catch (error) {
-    console.log('Error in checkAuth ', error);
-    res.status(400).json({ success: false, message: error.message });
+    console.error('❌ Error in checkAuth:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
   }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        verified: true,
+        emailVerified: true,
+        profilePhoto: true,
+        companyName: true,
+        accountType: true,
+        lastLogin: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error('❌ Get me error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+
+export const debugAuth = async (req, res) => {
+  res.json({
+    message: 'Debug auth endpoint',
+    headers: {
+      authorization: req.headers.authorization,
+      origin: req.headers.origin,
+      userAgent: req.headers['user-agent'],
+    },
+    cookies: req.cookies,
+    userId: req.userId || 'Not authenticated',
+    userRole: req.userRole || 'No role',
+  });
 };
