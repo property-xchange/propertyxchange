@@ -14,11 +14,7 @@ const app = express();
 
 config();
 
-const allowedOrigins = [
-  'https://propertyxchange.com.ng',
-  'https://www.propertyxchange.com.ng',
-  'http://localhost:5173',
-];
+const allowedOrigins = [/\.propertyxchange\.com\.ng$/, 'http://localhost:5173'];
 
 const corsOptions = {
   origin: (origin, callback) => {
