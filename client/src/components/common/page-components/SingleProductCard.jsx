@@ -6,38 +6,38 @@ import CardHoverIcons from './CardHoverIcons';
 import CardLabels from './CardLabels';
 import moment from 'moment';
 
+const fallbackImage = '/fallback.jpg'; // Ensure this exists in your public folder
+
 const SingleProductCard = ({
   id,
-  slug,
-  name,
-  street,
-  price,
-  toilets,
-  installments,
-  purpose,
-  number_of_beds,
-  number_of_bathrooms,
-  offer,
-  discountPrice,
-  discountEndDate,
-  appendTo,
-  images,
-  updatedAt,
-  createdAt,
-  basis,
+  slug = '',
+  name = 'Unnamed Property',
+  street = 'Unknown location',
+  price = 0,
+  toilets = 0,
+  installments = false,
+  purpose = '',
+  number_of_beds = 0,
+  number_of_bathrooms = 0,
+  offer = false,
+  discountPrice = 0,
+  discountEndDate = '',
+  appendTo = '',
+  images = [],
+  updatedAt = '',
+  createdAt = '',
+  basis = 'basis-[18rem]',
 }) => {
   return (
     <div
-      className={`flex-1 ${
-        basis ? basis : 'basis-[18rem]'
-      } shadow-light dark:border-card-dark border rounded-lg overflow-hidden relative group`}
+      className={`flex-1 ${basis} shadow-light dark:border-card-dark border rounded-lg overflow-hidden relative group`}
     >
       <div className="group !opacity-100 overflow-hidden relative">
         <Link to={`/property/${slug}`} className="!opacity-100">
           <img
-            src={images[0]}
+            src={images?.[0] || fallbackImage}
             alt={name}
-            className="w-full  h-fit md:h-[250px] object-cover group-hover:scale-125 transition-a"
+            className="w-full h-fit md:h-[250px] object-cover group-hover:scale-125 transition-a"
           />
         </Link>
         <CardHoverIcons id={id} />
@@ -48,11 +48,13 @@ const SingleProductCard = ({
           </div>
         </div>
       </div>
+
       <CardLabels
         purpose={purpose}
         createdAt={createdAt}
         updatedAt={updatedAt}
       />
+
       <div className="p-3">
         <Link
           to={`/property/${slug}`}
@@ -60,6 +62,7 @@ const SingleProductCard = ({
         >
           <h1 className="text-lg font-bold capitalize">{name}</h1>
         </Link>
+
         <div className="flex justify-between mt-3 text-xs">
           <div className="flex-align-center gap-x-2">
             <div className="icon-box !w-7 !h-7 bg-primary/20 hover:!bg-primary/40 text-primary">
@@ -82,7 +85,7 @@ const SingleProductCard = ({
         </div>
 
         <div className="mt-1 flex justify-between items-end">
-          <div className="flex flex-col ">
+          <div className="flex flex-col">
             <div className="flex justify-between flex-wrap gap-2">
               {offer ? (
                 <>
@@ -102,19 +105,20 @@ const SingleProductCard = ({
                 </span>
               )}
             </div>
-            <div className=" flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {installments && (
                 <h2 className="text-green-400 text-xs bg-secondary rounded-md py-1 px-2 mt-2">
                   Installments
                 </h2>
               )}
-              {offer && (
+              {offer && discountEndDate && (
                 <span className="text-green-400 text-xs bg-secondary rounded-md py-1 px-2 mt-2">
-                  {'Discount ends' + ' ' + moment(discountEndDate).fromNow()}
+                  {'Discount ends ' + moment(discountEndDate).fromNow()}
                 </span>
               )}
             </div>
           </div>
+
           <div>
             <Link to={`/property/${slug}`} className="btn btn-secondary">
               details
