@@ -112,7 +112,7 @@ export const profileListings = async (req, res) => {
     const saved = await prisma.savedListing.findMany({
       where: { userId: tokenUserId },
       include: {
-        listing: true,
+        Listing: true,
       },
     });
 
