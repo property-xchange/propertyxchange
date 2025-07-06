@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { Loader } from 'lucide-react';
 import PasswordStrengthMeter from '../components/common/PasswordStrengthMeter.jsx';
 import { useAuthStore } from '../zustand/store.js';
@@ -38,7 +38,6 @@ export default function Register() {
 
   return (
     <div className="p-3 max-w-lg mx-auto mt-11">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <h1 className="text-3xl text-center font-semibold my-7">Register</h1>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input

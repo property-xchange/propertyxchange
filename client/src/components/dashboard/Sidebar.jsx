@@ -14,7 +14,7 @@ import { BsHouseAdd, BsPencilSquare } from 'react-icons/bs';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleSidebar } from '../../redux/features/toggleSlice';
 import Avatar from '../../assets/avatar.webp';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { logout } from '../../helper/helper';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -164,7 +164,6 @@ const Sidebar = ({ isFolded }) => {
 
   return (
     <div>
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <aside
         className={`flex flex-col ${
           isFolded ? 'w-20' : 'w-64'

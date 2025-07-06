@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../zustand/store.js';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { Loader } from 'lucide-react';
 
 const VerifyEmail = () => {
@@ -66,7 +66,6 @@ const VerifyEmail = () => {
 
   return (
     <div className="flex justify-center items-center h-screen">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <div className="max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md">
           <h2 className="text-3xl font-bold mb-6 text-center">

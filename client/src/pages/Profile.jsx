@@ -16,7 +16,7 @@ import { locationData } from '../data/dummyData.js';
 import Dashboard from '../components/dashboard/Dashboard.jsx';
 import { CiWarning } from 'react-icons/ci';
 import { GrStatusGood } from 'react-icons/gr';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import apiRequest from '../helper/apiRequest.js';
 import { AuthContext } from '../context/AuthContext.jsx';
 
@@ -382,8 +382,6 @@ export default function Profile() {
   return (
     <Dashboard>
       <main className="p-3 max-w-5xl mx-auto">
-        <Toaster position="top-center" reverseOrder={false} />
-
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">

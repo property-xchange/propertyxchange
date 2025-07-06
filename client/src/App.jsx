@@ -9,6 +9,7 @@ import Dropdown from './components/common/DropDown';
 import NewsLetter from './components/common/NewsLetter';
 import Loader from './components/common/Loader';
 import { useAuthStore } from './zustand/store';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const [showButton, setShowButton] = useState(false);
@@ -43,6 +44,7 @@ function App() {
 
   return (
     <div>
+      <Toaster position="top-center" reverseOrder={false}></Toaster>
       {showLoader && <Loader />}
       <Navbar />
       <Dropdown />

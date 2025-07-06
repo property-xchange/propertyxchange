@@ -15,7 +15,7 @@ import { RiMenuUnfoldLine, RiMenuFoldLine } from 'react-icons/ri';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleSidebar } from '../../redux/features/toggleSlice';
 import apiRequest from '../../helper/apiRequest';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import Sidebar from './Sidebar.jsx';
 
 const DashboardCard = ({ title, value, icon: Icon, color, trend }) => (
@@ -412,7 +412,6 @@ const Dashboard = ({ children }) => {
   if (dashboardData.loading && !children) {
     return (
       <div className="flex relative mt-10 border border-1">
-        <Toaster position="top-center" reverseOrder={false}></Toaster>
         <div className="">
           <Sidebar isFolded={isSidebarFolded} />
         </div>
@@ -435,7 +434,6 @@ const Dashboard = ({ children }) => {
 
   return (
     <div className="flex relative mt-10 border border-1">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <div className="">
         <Sidebar isFolded={isSidebarFolded} />
       </div>

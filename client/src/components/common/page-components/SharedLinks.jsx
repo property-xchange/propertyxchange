@@ -7,7 +7,7 @@ import {
   FaCopy,
 } from 'react-icons/fa';
 import { BsTwitterX } from 'react-icons/bs';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 

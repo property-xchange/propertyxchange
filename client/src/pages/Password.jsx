@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Avatar from '../assets/avatar.webp';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useFormik } from 'formik';
 import { passwordValidate } from '../helper/validate';
 import useFetch from '../hooks/fetch.hook';
@@ -44,7 +44,6 @@ export default function Password() {
     return <h1 className="text-xl text-red-500 mt-12">{error.message}</h1>;
   return (
     <div className="p-3 max-w-lg mx-auto mt-11">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <h1 className="text-5xl font-bold text-center">
         Hello {apiData?.firstName || apiData?.username}
       </h1>

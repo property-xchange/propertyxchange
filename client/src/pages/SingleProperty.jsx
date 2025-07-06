@@ -29,7 +29,7 @@ import { FaCheck } from 'react-icons/fa6';
 import { RxCross2 } from 'react-icons/rx';
 import { IoMdHeartEmpty } from 'react-icons/io';
 import { GoReport } from 'react-icons/go';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import ShareLinks from '../components/common/page-components/SharedLinks';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
@@ -82,7 +82,6 @@ const SingleProperty = () => {
 
   return (
     <div className="pt-14 px-[3%] md:px-[6%]">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <div className="grid md:grid-cols-12 gap-x-4 mt-5 w-full">
         <div className="md:col-span-8 mt-5 md:mt-0 h-fit md:sticky top-0">
           <div className="flex justify-between items-center mb-3">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '../zustand/store';
 import { generateOTP, verifyOTP } from '../helper/helper';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +45,6 @@ export default function Recovery() {
 
   return (
     <div className="p-3 max-w-lg mx-auto mt-[4rem]">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <h1 className="text-3xl text-center font-semibold mt-7">Recovery</h1>
       <h3 className="text-xl text-center">Enter OTP to recover password</h3>
       <form className="flex flex-col gap-4" onSubmit={onSubmit}>

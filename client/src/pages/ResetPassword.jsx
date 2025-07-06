@@ -3,7 +3,7 @@ import { useAuthStore } from '../zustand/store.js';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loader } from 'lucide-react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import PasswordStrengthMeter from '../components/common/PasswordStrengthMeter.jsx';
 
 const ResetPassword = () => {
@@ -48,7 +48,6 @@ const ResetPassword = () => {
 
   return (
     <div className="p-3 max-w-lg mx-auto mt-20">
-      <Toaster position="top-center" reverseOrder={false}></Toaster>
       <div className="max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden">
         <div className="p-8">
           <h1 className="text-3xl text-center font-semibold my-7">

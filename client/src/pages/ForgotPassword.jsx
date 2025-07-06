@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '../zustand/store.js';
 import { ArrowLeft, Loader, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +20,6 @@ const ForgotPassword = () => {
   return (
     <>
       <div className="p-3 max-w-lg mx-auto mt-11">
-        <Toaster position="top-center" reverseOrder={false}></Toaster>
         <h1 className="text-3xl text-center font-semibold my-7">
           Forgot Password
         </h1>

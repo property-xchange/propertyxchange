@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Check, MapPin } from 'lucide-react';
 import Dashboard from '../components/dashboard/Dashboard.jsx';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import apiRequest from '../helper/apiRequest.js';
 
 // Import separate step components
@@ -445,8 +445,6 @@ export default function CreateListing() {
   return (
     <Dashboard>
       <div className="max-w-4xl mx-auto p-6">
-        <Toaster position="top-center" reverseOrder={false} />
-
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
