@@ -8,6 +8,7 @@ import userRoute from './routes/user.route.js';
 import listingRoute from './routes/listing.route.js';
 import cloudinaryRoute from './routes/cloudinary.route.js';
 import blogRoute from './routes/blog.route.js';
+import { verifyToken } from './middleware/verifyToken.js';
 
 const app = express();
 
@@ -45,6 +46,21 @@ app.use('/api/blog/', blogRoute);
 // Test server
 app.get('/test', (req, res) => {
   res.json({ message: 'hello world' });
+});
+
+// Add a debug endpoint to test authentication
+app.get('/api/debug/auth', verifyToken, (req, res) => {
+  res.json({
+    message: 'Authentication working!',
+    userId: req.userId,
+    userRole: req.userRole,
+    cookies: req.cookies,
+    headers: {
+      authorization: req.headers.authorization,
+      origin: req.headers.origin,
+      'user-agent': req.headers['user-agent'],
+    },
+  });
 });
 
 // Global error handler
