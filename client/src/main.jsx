@@ -1,3 +1,4 @@
+// client/src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
@@ -8,7 +9,7 @@ import { persistor, store } from './redux/store.js';
 import { AnimatePresence } from 'framer-motion';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { HelmetProvider } from 'react-helmet-async'; // ADD THIS IMPORT
+import { HelmetProvider } from 'react-helmet-async';
 import theme from './theme';
 import { AuthContextProvider } from './context/AuthContext.jsx';
 import { createBrowserRouter } from 'react-router-dom';
@@ -41,6 +42,7 @@ import {
   profilePageLoader,
   propertyLoader,
   singlePropertyLoader,
+  agentLoader,
 } from './helper/loader';
 import { SaveProperty, UserListing, Dashboard } from './components/dashboard';
 
@@ -58,10 +60,19 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import VerifyEmail from './pages/VerifyEmail.jsx';
 import AutoLogout from './components/common/AutoLogout.jsx';
 
+// Import Error Components
+import AgentErrorPage from './components/error/AgentErrorPage.jsx';
+import GeneralErrorPage from './components/error/GeneralErrorPage.jsx';
+import RequestForm from './components/forms/RequestForm.jsx';
+import ViewRequests from './pages/ViewRequests.jsx';
+import MyRequests from './pages/MyRequest.jsx';
+import DashboardRequest from './components/dashboard/DashboardRequest.jsx';
+
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <GeneralErrorPage />,
     children: [
       {
         element: <PublicLayout />,
@@ -70,7 +81,30 @@ const router = createBrowserRouter([
           { path: '/register', element: <Register /> },
           { path: '/about-us', element: <About /> },
           { path: '/contact-us', element: <Contact /> },
+
+          // Main agents page
           { path: '/agents', element: <Agents /> },
+
+          // Agent type routes - all use the same Agents component
+          { path: '/agents/property-owner', element: <Agents /> },
+          { path: '/agents/individual-agent', element: <Agents /> },
+          { path: '/agents/developer', element: <Agents /> },
+          { path: '/agents/law-firm', element: <Agents /> },
+          { path: '/agents/surveying', element: <Agents /> },
+          { path: '/agents/real-estate-organization', element: <Agents /> },
+
+          // Single agent route (should come after type routes to avoid conflicts)
+          {
+            path: '/agents/:slugOrId',
+            element: <SingleAgent />,
+            loader: agentLoader,
+            errorElement: <AgentErrorPage />,
+          },
+          { path: '/post-property', element: <RequestForm /> },
+          { path: '/property-request', element: <ViewRequests /> },
+
+          { path: '/my-requests', element: <MyRequests /> },
+
           { path: '*', element: <PageNotFound /> },
           { path: '/password', element: <Password /> },
           { path: '/forgot-password', element: <ForgotPassword /> },
@@ -81,13 +115,14 @@ const router = createBrowserRouter([
             path: '/property',
             element: <Property />,
             loader: propertyLoader,
+            errorElement: <GeneralErrorPage />,
           },
           {
             path: '/property/:id',
             element: <SingleProperty />,
             loader: singlePropertyLoader,
+            errorElement: <GeneralErrorPage />,
           },
-          { path: '/agents/:id', element: <SingleAgent /> },
           { path: '/sign-in', element: <SignIn /> },
           { path: '/verify-email', element: <VerifyEmail /> },
           { path: '/reset-password/:token', element: <ResetPassword /> },
@@ -100,14 +135,20 @@ const router = createBrowserRouter([
           { path: '/profile', element: <Profile /> },
           { path: '/create-listing', element: <CreateListing /> },
           {
+            path: '/dashboard/property-request',
+            element: <DashboardRequest />,
+          },
+          {
             path: '/saved-listings',
             element: <SaveProperty />,
             loader: profilePageLoader,
+            errorElement: <GeneralErrorPage />,
           },
           {
             path: '/user-listings',
             element: <UserListing />,
             loader: profilePageLoader,
+            errorElement: <GeneralErrorPage />,
           },
         ],
       },
@@ -143,7 +184,7 @@ root.render(
               <ChakraProvider theme={theme}>
                 <ErrorBoundary>
                   <RouterProvider router={router}>
-                    <AutoLogout></AutoLogout>
+                    <AutoLogout />
                   </RouterProvider>
                 </ErrorBoundary>
               </ChakraProvider>
@@ -151,6 +192,6 @@ root.render(
           </PersistGate>
         </Provider>
       </AuthContextProvider>
-    </HelmetProvider>{' '}
+    </HelmetProvider>
   </React.StrictMode>
 );

@@ -1,0 +1,82 @@
+# Robots.txt for Real Estate App - Web Crawling Protection
+
+User-agent: *
+Disallow: /agents/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /admin/
+Disallow: /staff/
+Disallow: /create-listing/
+Disallow: /user-listings/
+Disallow: /saved-listings/
+Disallow: /property/*/contact
+Disallow: /agents/*/contact
+Disallow: /agents/chat/
+Disallow: /private/
+Disallow: /uploads/
+Disallow: /temp/
+
+# Allow only specific pages for SEO
+Allow: /
+Allow: /about-us
+Allow: /contact-us
+Allow: /services
+Allow: /blog
+Allow: /blog/*
+Allow: /property
+Allow: /property/*
+Allow: /sign-in
+Allow: /register
+
+# Block known crawlers and scrapers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: scrapy
+Disallow: /
+
+User-agent: wget
+Disallow: /
+
+User-agent: curl
+Disallow: /
+
+User-agent: python-requests
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Crawl delay for allowed bots
+Crawl-delay: 5
+
+# Sitemap location
+Sitemap: https://propertyxchange.com.ng/sitemap.xml

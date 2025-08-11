@@ -4,6 +4,7 @@ import { LuLayoutDashboard } from 'react-icons/lu';
 import { FaListUl, FaBlog, FaUsers } from 'react-icons/fa';
 import { MdOutlineAutoGraph, MdCategory } from 'react-icons/md';
 import { CgProfile } from 'react-icons/cg';
+import { FiMessageSquare } from 'react-icons/fi';
 import { FaListCheck } from 'react-icons/fa6';
 import { LuTicket } from 'react-icons/lu';
 import { TiMessages } from 'react-icons/ti';
@@ -111,6 +112,12 @@ const Sidebar = ({ isFolded }) => {
       icon: FaUsers,
       label: 'User Management',
       roles: ['ADMIN'],
+    },
+    {
+      icon: FiMessageSquare,
+      label: 'My Requests',
+      path: '/my-requests',
+      roles: ['USER', 'STAFF', 'ADMIN'],
     },
 
     {
