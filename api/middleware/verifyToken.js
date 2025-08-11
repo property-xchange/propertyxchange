@@ -7,16 +7,16 @@ export const verifyToken = (req, res, next) => {
   const headerToken = req.headers.authorization?.split(' ')[1]; // Bearer token
   const token = cookieToken || headerToken;
 
-  console.log('🔍 Auth Debug Info:');
-  console.log('- Cookie token:', cookieToken ? 'Present' : 'Missing');
-  console.log('- Header token:', headerToken ? 'Present' : 'Missing');
-  console.log('- All cookies:', req.cookies);
-  console.log('- Auth header:', req.headers.authorization);
-  console.log('- Origin:', req.headers.origin);
-  console.log('- User Agent:', req.headers['user-agent']);
+  // console.log('🔍 Auth Debug Info:');
+  // console.log('- Cookie token:', cookieToken ? 'Present' : 'Missing');
+  // console.log('- Header token:', headerToken ? 'Present' : 'Missing');
+  // console.log('- All cookies:', req.cookies);
+  // console.log('- Auth header:', req.headers.authorization);
+  // console.log('- Origin:', req.headers.origin);
+  // console.log('- User Agent:', req.headers['user-agent']);
 
   if (!token) {
-    console.log('❌ No token found in cookies or headers');
+    // console.log('❌ No token found in cookies or headers');
     return res.status(401).json({
       message: 'Not Authenticated!',
       debug: {
@@ -54,12 +54,12 @@ export const verifyToken = (req, res, next) => {
         return res.status(403).json({ message: 'Account has been banned!' });
       }
 
-      console.log(
-        '✅ Authentication successful for user:',
-        user.id,
-        'Role:',
-        user.role
-      );
+      // console.log(
+      //   '✅ Authentication successful for user:',
+      //   user.id,
+      //   'Role:',
+      //   user.role
+      // );
       req.userId = user.id;
       req.userRole = user.role;
       req.userStatus = user.status;
