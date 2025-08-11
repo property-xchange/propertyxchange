@@ -55,8 +55,8 @@ export const register = async (req, res) => {
           success: true,
           message: 'Verification email resent. Please check your inbox.',
         });
-      } catch (emailError) {
-        console.error('Error resending verification email:', emailError);
+      } catch (error) {
+        console.error('Error resending verification email:', error);
         return res.status(500).json({
           success: false,
           message: 'Failed to send verification email. Please try again later.',
@@ -87,8 +87,8 @@ export const register = async (req, res) => {
     try {
       // Try sending the verification email before creating the user
       await sendVerificationEmail(email, verificationToken);
-    } catch (emailError) {
-      console.error('Error sending verification email:', emailError);
+    } catch (error) {
+      console.error('Error sending verification email:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to send verification email. Please try again later.',
