@@ -122,7 +122,7 @@ export default function SignIn() {
             'Login'
           )}
         </button>
-        {error && <p className="text-red-500">{error}</p>}
+        {storeError && <p className="text-red-500">{storeError}</p>}
       </form>
       <div className="flex justify-between items-center mt-5">
         <div className="flex justify-between items-center gap-2">
