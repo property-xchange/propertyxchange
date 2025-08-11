@@ -11,7 +11,12 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { resetPassword, error, isLoading, message } = useAuthStore();
+  const {
+    resetPassword,
+    error: storeError,
+    isLoading,
+    message,
+  } = useAuthStore();
 
   const { token } = useParams();
   const navigate = useNavigate();
@@ -34,7 +39,7 @@ const ResetPassword = () => {
       }, 2000);
     } catch (error) {
       console.error(error);
-      toast.error(error.message || 'Error resetting password');
+      toast.error(err.message || storeError || 'Error resetting password');
     }
   };
 

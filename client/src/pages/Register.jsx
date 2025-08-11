@@ -14,7 +14,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const { signup, error, isLoading } = useAuthStore();
+  const { signup, error: storeError, isLoading } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +28,9 @@ export default function Register() {
       await signup(email, password, username);
       navigate('/verify-email');
     } catch (err) {
-      toast.error(err.message || 'An error occurred during signup.');
+      toast.error(
+        err.message || storeError || 'An error occurred during signup.'
+      );
     }
   };
 

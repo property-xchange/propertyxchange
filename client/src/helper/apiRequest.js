@@ -33,29 +33,24 @@ apiRequest.interceptors.request.use(
   }
 );
 
-// Add response interceptor for better error handling
 apiRequest.interceptors.response.use(
-  (response) => {
-    console.log('✅ API Response:', {
-      status: response.status,
-      url: response.config.url,
-    });
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error('❌ API Error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      message: error.response?.data?.message || error.message,
-    });
+    const serverMsg =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      'Request failed';
 
-    // If authentication fails, redirect to login
+    error.message = serverMsg; // <- most code/Toast reads this
+    error.serverMessage = serverMsg; // <- optional explicit field
+    error.status = error?.response?.status; // <- handy to branch on status
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/sign-in';
     }
-
     return Promise.reject(error);
   }
 );

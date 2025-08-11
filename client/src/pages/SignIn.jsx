@@ -15,7 +15,12 @@ export default function SignIn() {
   const [isResending, setIsResending] = useState(false);
   const [showResendSection, setShowResendSection] = useState(false);
 
-  const { login, isLoading, isAuthenticated, error } = useAuthStore();
+  const {
+    login,
+    isLoading,
+    isAuthenticated,
+    error: storeError,
+  } = useAuthStore();
   const navigate = useNavigate();
 
   // useEffect(() => {
@@ -40,17 +45,18 @@ export default function SignIn() {
         navigate('/dashboard');
       }, 2000);
     } catch (err) {
-      const errorMessage =
+      const msg =
         err?.response?.data?.message || err.message || 'An error occurred';
+      const lc = String(msg).toLowerCase();
 
-      if (errorMessage.includes('email not verified')) {
+      if (lc.includes('email not verified')) {
         toast.error(
           'Your email is not verified. Please resend the verification email.'
         );
         setShowResendSection(true);
       } else {
         setShowResendSection(false);
-        toast.error(errorMessage);
+        toast.error(msg);
       }
     }
   };
@@ -66,9 +72,9 @@ export default function SignIn() {
       toast.success('Verification code sent! Please check your inbox.');
       navigate('/verify-email');
     } catch (err) {
-      const errorMessage =
+      const msg =
         err?.response?.data?.message || err.message || 'Failed to resend email';
-      toast.error(errorMessage);
+      toast.error(msg);
     } finally {
       setIsResending(false);
     }

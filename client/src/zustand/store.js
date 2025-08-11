@@ -23,10 +23,7 @@ export const useAuthStore = create((set) => ({
         isLoading: false,
       });
     } catch (error) {
-      set({
-        error: error.response?.data?.message || 'Error signing up',
-        isLoading: false,
-      });
+      set({ error: error.message, isLoading: false });
       throw error;
     }
   },
@@ -52,10 +49,7 @@ export const useAuthStore = create((set) => ({
         'Login error:',
         error.response?.data?.message || error.message
       );
-      set({
-        error: error.response?.data?.message || 'Error logging in',
-        isLoading: false,
-      });
+      set({ error: error.message, isLoading: false });
       throw error;
     }
   },
@@ -87,10 +81,7 @@ export const useAuthStore = create((set) => ({
       });
       return response.data;
     } catch (error) {
-      set({
-        error: error.response?.data?.message || 'Error verifying email',
-        isLoading: false,
-      });
+      set({ error: error.message, isLoading: false });
       throw error;
     }
   },
@@ -105,10 +96,7 @@ export const useAuthStore = create((set) => ({
       });
       return response.data;
     } catch (error) {
-      set({
-        error: error.response?.data?.message || 'Error verifying email',
-        isLoading: false,
-      });
+      set({ error: error.message, isLoading: false });
       throw error;
     }
   },
@@ -136,11 +124,7 @@ export const useAuthStore = create((set) => ({
       });
       set({ message: response.data.message, isLoading: false });
     } catch (error) {
-      set({
-        isLoading: false,
-        error:
-          error.response?.data?.message || 'Error sending reset password email',
-      });
+      set({ error: error.message, isLoading: false });
       throw error;
     }
   },
