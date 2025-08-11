@@ -87,6 +87,29 @@ export const requireRole = (roles) => {
   };
 };
 
+export const optionalAuth = (req, res, next) => {
+  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    // No token provided, continue without authentication
+    req.userId = null;
+    req.userRole = null;
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    req.userId = decoded.id;
+    req.userRole = decoded.role || 'USER';
+    next();
+  } catch (error) {
+    // Invalid token, continue without authentication
+    req.userId = null;
+    req.userRole = null;
+    next();
+  }
+};
+
 export const requireAdmin = requireRole(['ADMIN']);
 export const requireStaffOrAdmin = requireRole(['STAFF', 'ADMIN']);
 export const requireUser = requireRole(['USER', 'STAFF', 'ADMIN']);

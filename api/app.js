@@ -8,13 +8,17 @@ import userRoute from './routes/user.route.js';
 import listingRoute from './routes/listing.route.js';
 import cloudinaryRoute from './routes/cloudinary.route.js';
 import blogRoute from './routes/blog.route.js';
+import agentRoute from './routes/agent.route.js';
+import requestRoute from './routes/request.route.js';
 import { verifyToken } from './middleware/verifyToken.js';
 
 const app = express();
 
 config();
 
-const allowedOrigins = [/\.propertyxchange\.com\.ng$/, 'http://localhost:5173'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
+  : [];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -33,12 +37,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
+app.use('/api/agent', agentRoute);
 app.use('/api/auth/', authRoute);
 app.use('/api/test/', testRoute);
 app.use('/api/user/', userRoute);
 app.use('/api/listing/', listingRoute);
 app.use('/api/cloudinary/', cloudinaryRoute);
 app.use('/api/blog/', blogRoute);
+app.use('/api/request/', requestRoute);
 // Test server
 app.get('/test', (req, res) => {
   res.json({ message: 'hello world' });

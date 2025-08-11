@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -185,11 +182,13 @@ model Listing {
   subType             PropertySubType
 
   // Relations
-  approver     User?           @relation("ApprovedListings", fields: [approvedBy], references: [id])
-  reviews      ListingReview[]
-  user         User            @relation(fields: [userId], references: [id])
-  userId       String          @db.ObjectId
-  savedListing SavedListing[]
+  approver         User?             @relation("ApprovedListings", fields: [approvedBy], references: [id])
+  reviews          ListingReview[]
+  user             User              @relation(fields: [userId], references: [id])
+  userId           String            @db.ObjectId
+  savedListing     SavedListing[]
+  requestResponses RequestResponse[] @relation("RequestResponses")
+  RequestResponse  RequestResponse[]
 }
 
 model Notification {
@@ -213,8 +212,8 @@ model SavedListing {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
   listing   Listing  @relation(fields: [listingId], references: [id])
-  userId    String   @unique @db.ObjectId
-  listingId String   @unique @db.ObjectId
+  userId    String   @db.ObjectId
+  listingId String   @db.ObjectId
   createdAt DateTime @default(now())
 
   @@unique([userId, listingId])
@@ -222,6 +221,7 @@ model SavedListing {
 
 model User {
   id                         String      @id @default(auto()) @map("_id") @db.ObjectId
+  slug                       String? // Added slug field for SEO-friendly URLs
   email                      String      @unique
   username                   String
   password                   String
@@ -239,6 +239,7 @@ model User {
   status                     UserStatus  @default(ACTIVE)
   verified                   Boolean     @default(false)
   emailVerified              Boolean     @default(false)
+  sentMessages               Message[]   @relation("SentMessages")
   companyNumber              String?
   aboutCompany               String?
   companyEmail               String?
@@ -278,7 +279,15 @@ model User {
   Notification  Notification[]
 
   // Opposite relation for approved listings
-  ApprovedListings Listing[] @relation("ApprovedListings")
+  ApprovedListings Listing[]         @relation("ApprovedListings")
+  Message          Message[]
+  propertyRequests PropertyRequest[]
+  agentResponses   RequestResponse[] @relation("AgentResponses")
+
+  @@index([slug])
+  @@index([accountType])
+  @@index([verified])
+  @@index([state])
 }
 
 model BlogCategory {
@@ -337,4 +346,126 @@ model BlogComment {
 
   @@index([blogId])
   @@index([authorId])
+}
+
+model Conversation {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  participants  String[]  @db.ObjectId
+  lastMessage   String?
+  lastMessageAt DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  messages Message[]
+
+  @@index([participants])
+}
+
+model Message {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  content        String
+  senderId       String      @db.ObjectId
+  conversationId String      @db.ObjectId
+  messageType    MessageType @default(TEXT)
+  isRead         Boolean     @default(false)
+  readAt         DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User         User?        @relation(fields: [userId], references: [id])
+  userId       String?      @db.ObjectId
+
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+}
+
+enum RequestStatus {
+  PENDING
+  OPEN
+  MATCHED
+  CLOSED
+  EXPIRED
+}
+
+model PropertyRequest {
+  id     String        @id @default(auto()) @map("_id") @db.ObjectId
+  slug   String        @unique
+  status RequestStatus @default(PENDING)
+
+  // Property Details
+  purpose ListingCategory // RENT, SALE, JOINT_VENTURE, SHORT_LET
+  type    PropertyType // CO_WORKING_SPACE, COMMERCIAL_PROPERTY, etc.
+  subType PropertySubType? // Optional
+
+  // Location
+  state String
+  lga   String
+
+  // Property Specifications (Optional)
+  number_of_beds Int?
+  budget         Float // Budget for the request
+
+  // Request Details
+  comments String? // Additional comments/requirements
+
+  // Contact Information
+  name        String
+  email       String
+  phoneNumber String
+  accountType AccountType // INDIVIDUAL, LAW, SURVEY, etc.
+
+  // System fields
+  isPublic  Boolean   @default(true) // Whether to show publicly
+  expiresAt DateTime? // When the request expires
+  viewCount Int       @default(0)
+
+  // Relations
+  userId String? @db.ObjectId // Optional - if user is logged in
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Responses from agents/property owners
+  responses RequestResponse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([purpose])
+  @@index([state])
+  @@index([budget])
+  @@index([createdAt])
+}
+
+model RequestResponse {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  message       String
+  contactEmail  String?
+  contactPhone  String?
+  proposedPrice Float? // Agent's proposed price
+
+  // Relations
+  requestId String          @db.ObjectId
+  request   PropertyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  agentId String @db.ObjectId
+  agent   User   @relation("AgentResponses", fields: [agentId], references: [id])
+
+  // Optional listing if agent has a specific property
+  listingId String?  @db.ObjectId
+  listing   Listing? @relation("RequestResponses", fields: [listingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Listing   Listing? @relation(fields: [listingId], references: [id])
+
+  @@unique([requestId, agentId]) // One response per agent per request
 }
