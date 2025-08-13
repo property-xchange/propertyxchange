@@ -10,6 +10,7 @@ import {
 } from '../common/page-components';
 import { PropertyList } from '../property';
 import PropertyLoader from '../../components/common/PropertyLoader';
+import { CgUnavailable } from 'react-icons/cg';
 
 const SaveProperty = () => {
   const { postResponse } = useLoaderData();
@@ -20,15 +21,6 @@ const SaveProperty = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [currentPageProperties, setCurrentPageProperties] = useState([]);
   const [savedListings, setSavedListings] = useState([]);
-
-  useEffect(() => {
-    if (postResponse && postResponse.data && postResponse.data.savedListings) {
-      setSavedListings(postResponse.data.savedListings);
-      setCurrentPageProperties(
-        postResponse.data.savedListings.slice(0, pageNumber)
-      );
-    }
-  }, [postResponse]);
 
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
@@ -47,18 +39,35 @@ const SaveProperty = () => {
     <Dashboard>
       <main className="p-3 max-w-5xl mx-auto">
         <h1 className="text-2xl font-semibold text-center my-3 md:mb-7 mb-4 uppercase tracking-widest">
-          Your Properties
+          Saved Properties
         </h1>
         <div>
           <Suspense fallback={<PropertyLoader />}>
             <Await resolve={postResponse}>
-              {() => {
-                if (
-                  !currentPageProperties ||
-                  currentPageProperties.length === 0
-                ) {
-                  return <div>Error: No properties found.</div>;
+              {(resolvedData) => {
+                console.log('Resolved saved data:', resolvedData);
+
+                // Extract savedListings from the resolved data
+                const listings = resolvedData?.data?.savedListings || [];
+
+                // Update state when data is resolved
+                useEffect(() => {
+                  setSavedListings(listings);
+                  setCurrentPageProperties(listings.slice(0, pageNumber));
+                }, [listings]);
+
+                if (!listings || listings.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center p-7">
+                      <span className="text-2xl">
+                        Oops!
+                        <CgUnavailable className="inline ml-2" />
+                      </span>
+                      <p className="text-2xl">No saved properties found</p>
+                    </div>
+                  );
                 }
+
                 return (
                   <>
                     <HeadeFilters
@@ -66,9 +75,9 @@ const SaveProperty = () => {
                       setLayout={setLayout}
                       currentPage={currentPage}
                       itemsPerPage={pageNumber}
-                      totalItems={savedListings.length}
+                      totalItems={listings.length}
                     />
-                    <div className="">
+                    <div>
                       {currentPageProperties.length > 0 ? (
                         <>
                           {layout === 'grid' ? (
@@ -78,19 +87,21 @@ const SaveProperty = () => {
                           ) : (
                             <PropertyList properties={currentPageProperties} />
                           )}
-                          <Pagination
-                            itemsPerPage={pageNumber}
-                            pageData={currentPageProperties}
-                            onPageChange={handlePageChange}
-                          />
+                          {listings.length > pageNumber && (
+                            <Pagination
+                              itemsPerPage={pageNumber}
+                              pageData={listings}
+                              onPageChange={handlePageChange}
+                            />
+                          )}
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center p-7">
                           <span className="text-2xl">
                             Oops!
-                            <CgUnavailable className="inline" />
+                            <CgUnavailable className="inline ml-2" />
                           </span>
-                          <p className="text-2xl">No property available</p>
+                          <p className="text-2xl">No properties available</p>
                         </div>
                       )}
                     </div>

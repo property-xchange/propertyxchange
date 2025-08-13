@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import {
+  useNavigate,
+  useLoaderData,
+  useParams,
+  useLocation,
+} from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Check, MapPin } from 'lucide-react';
 import Dashboard from '../components/dashboard/Dashboard.jsx';
 import toast from 'react-hot-toast';
@@ -29,54 +34,136 @@ import { getCurrentLocation } from '../helper/locationHelper.js';
 export default function CreateListing() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const params = useParams();
+  const location = useLocation();
+
+  // Determine if this is edit mode
+  const isEdit = location.pathname.includes('/edit-listing/');
+
+  // Get existing listing data if editing
+  let existingListing = null;
+  try {
+    existingListing = isEdit ? useLoaderData() : null;
+  } catch (error) {
+    console.log('No loader data available');
+  }
 
   // Step management
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
 
-  // Form data state
-  const [formData, setFormData] = useState({
-    name: '',
-    street: '',
-    latitude: '',
-    longitude: '',
-    price: '',
-    number_of_beds: '',
-    number_of_bathrooms: '',
-    toilets: '',
-    appendTo: '',
-    initialPayment: '',
-    monthlyPayment: '',
-    duration: '',
-    installmentAppendTo: '',
-    discountEndDate: '',
-    youtubeLink: '',
-    instagramLink: '',
-  });
-
-  // All other state variables
-  const [images, setImages] = useState([]);
-  const [purpose, setPurpose] = useState();
-  const [selectedType, setSelectedType] = useState();
-  const [selectedSubType, setSelectedSubType] = useState();
-  const [description, setDescription] = useState('');
+  // State variables for form validation and UI
   const [showMoreFeatures, setShowMoreFeatures] = useState(false);
-  const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const [selectedState, setSelectedState] = useState();
-  const [selectedLGA, setSelectedLGA] = useState();
-  const [showDiscount, setShowDiscount] = useState(false);
-  const [showInstallment, setShowInstallment] = useState(false);
-  const [regularPrice, setRegularPrice] = useState('');
-  const [discountPrice, setDiscountPrice] = useState('');
-  const [discountPercentage, setDiscountPercentage] = useState('');
-  const [instagramLinkErr, setInstagramLinkErr] = useState();
-  const [youTubeLinkErr, setYouTubeLinkErr] = useState();
-  const [isServiced, setIsServiced] = useState(false);
-  const [isFurnished, setIsFurnished] = useState(false);
-  const [hasParking, setHasParking] = useState(false);
-  const [isNewlyBuilt, setIsNewlyBuilt] = useState(false);
+  const [instagramLinkErr, setInstagramLinkErr] = useState('');
+  const [youTubeLinkErr, setYouTubeLinkErr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+
+  // Form data state
+  const [formData, setFormData] = useState(() => {
+    if (isEdit && existingListing) {
+      return {
+        name: existingListing.name || '',
+        street: existingListing.street || '',
+        latitude: existingListing.latitude || '',
+        longitude: existingListing.longitude || '',
+        price: existingListing.price?.toString() || '',
+        number_of_beds: existingListing.number_of_beds?.toString() || '',
+        number_of_bathrooms:
+          existingListing.number_of_bathrooms?.toString() || '',
+        toilets: existingListing.toilets?.toString() || '',
+        appendTo: existingListing.appendTo || '',
+        initialPayment: existingListing.initialPayment?.toString() || '',
+        monthlyPayment: existingListing.monthlyPayment?.toString() || '',
+        duration: existingListing.duration?.toString() || '',
+        installmentAppendTo: existingListing.installmentAppendTo || '',
+        discountEndDate: existingListing.discountEndDate
+          ? new Date(existingListing.discountEndDate)
+              .toISOString()
+              .split('T')[0]
+          : '',
+        youtubeLink: existingListing.youtubeLink || '',
+        instagramLink: existingListing.instagramLink || '',
+      };
+    }
+    return {
+      name: '',
+      street: '',
+      latitude: '',
+      longitude: '',
+      price: '',
+      number_of_beds: '',
+      number_of_bathrooms: '',
+      toilets: '',
+      appendTo: '',
+      initialPayment: '',
+      monthlyPayment: '',
+      duration: '',
+      installmentAppendTo: '',
+      discountEndDate: '',
+      youtubeLink: '',
+      instagramLink: '',
+    };
+  });
+
+  // Initialize other state with existing data if editing
+  const [images, setImages] = useState(
+    isEdit && existingListing?.images ? existingListing.images : []
+  );
+  const [purpose, setPurpose] = useState(
+    isEdit && existingListing?.purpose
+      ? existingListing.purpose.toLowerCase()
+      : ''
+  );
+  const [selectedType, setSelectedType] = useState(
+    isEdit && existingListing?.type ? existingListing.type : ''
+  );
+  const [selectedSubType, setSelectedSubType] = useState(
+    isEdit && existingListing?.subType ? existingListing.subType : ''
+  );
+  const [description, setDescription] = useState(
+    isEdit && existingListing?.description ? existingListing.description : ''
+  );
+  const [selectedFeatures, setSelectedFeatures] = useState(
+    isEdit && existingListing?.features ? existingListing.features : []
+  );
+  const [selectedState, setSelectedState] = useState(
+    isEdit && existingListing?.state ? existingListing.state : ''
+  );
+  const [selectedLGA, setSelectedLGA] = useState(
+    isEdit && existingListing?.lga ? existingListing.lga : ''
+  );
+  const [showDiscount, setShowDiscount] = useState(
+    isEdit && existingListing?.offer ? existingListing.offer : false
+  );
+  const [showInstallment, setShowInstallment] = useState(
+    isEdit && existingListing?.installment ? existingListing.installment : false
+  );
+  const [regularPrice, setRegularPrice] = useState(
+    isEdit && existingListing?.price ? existingListing.price.toString() : ''
+  );
+  const [discountPrice, setDiscountPrice] = useState(
+    isEdit && existingListing?.discountPrice
+      ? existingListing.discountPrice.toString()
+      : ''
+  );
+  const [discountPercentage, setDiscountPercentage] = useState(
+    isEdit && existingListing?.discountPercent
+      ? existingListing.discountPercent.toString()
+      : ''
+  );
+  const [isServiced, setIsServiced] = useState(
+    isEdit && existingListing?.serviced ? existingListing.serviced : false
+  );
+  const [isFurnished, setIsFurnished] = useState(
+    isEdit && existingListing?.furnished ? existingListing.furnished : false
+  );
+  const [hasParking, setHasParking] = useState(
+    isEdit && existingListing?.parking ? existingListing.parking : false
+  );
+  const [isNewlyBuilt, setIsNewlyBuilt] = useState(
+    isEdit && existingListing?.newlyBuilt ? existingListing.newlyBuilt : false
+  );
 
   const steps = [
     {
@@ -117,7 +204,6 @@ export default function CreateListing() {
     }
   };
 
-  // All your existing handler functions...
   const toggleDiscount = () => setShowDiscount(!showDiscount);
   const toggleInstallment = () => setShowInstallment(!showInstallment);
 
@@ -268,58 +354,6 @@ export default function CreateListing() {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-
-  //   try {
-  //     const payload = {
-  //       name: formData.name,
-  //       price: parseFloat(formData.price),
-  //       purpose,
-  //       number_of_beds: parseInt(formData.number_of_beds),
-  //       number_of_bathrooms: parseInt(formData.number_of_bathrooms),
-  //       toilets: parseInt(formData.toilets),
-  //       latitude: formData.latitude,
-  //       longitude: formData.longitude,
-  //       discountPercent: parseFloat(discountPercentage),
-  //       discountPrice: parseFloat(discountPrice),
-  //       discountEndDate: formData.discountEndDate
-  //         ? new Date(formData.discountEndDate + 'T00:00:00Z').toISOString()
-  //         : null,
-  //       installment: showInstallment,
-  //       appendTo: formData.appendTo,
-  //       installmentAppendTo: formData.installmentAppendTo,
-  //       initialPayment: parseFloat(formData.initialPayment),
-  //       monthlyPayment: parseFloat(formData.monthlyPayment),
-  //       duration: parseInt(formData.duration),
-  //       furnished: isFurnished,
-  //       serviced: isServiced,
-  //       newlyBuilt: isNewlyBuilt,
-  //       parking: hasParking,
-  //       offer: showDiscount,
-  //       youtubeLink: formData.youtubeLink,
-  //       instagramLink: formData.instagramLink,
-  //       type: selectedType,
-  //       subType: selectedSubType,
-  //       features: selectedFeatures,
-  //       street: formData.street,
-  //       lga: selectedLGA,
-  //       state: selectedState,
-  //       description: description,
-  //       images: images,
-  //     };
-
-  //     const res = await apiRequest.post('/listing', payload);
-  //     toast.success('Listing created successfully!');
-  //     navigate('/property/' + res.data.id);
-  //   } catch (err) {
-  //     toast.error(err.response?.data?.message || 'Failed to create listing');
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -328,7 +362,7 @@ export default function CreateListing() {
       const payload = {
         name: formData.name,
         price: parseFloat(formData.price),
-        purpose: purpose, // This should be lowercase as backend will handle conversion
+        purpose: purpose,
         number_of_beds: parseInt(formData.number_of_beds),
         number_of_bathrooms: parseInt(formData.number_of_bathrooms),
         toilets: parseInt(formData.toilets),
@@ -352,8 +386,8 @@ export default function CreateListing() {
         offer: showDiscount,
         youtubeLink: formData.youtubeLink || null,
         instagramLink: formData.instagramLink || null,
-        type: selectedType, // This should be the display format as backend will handle conversion
-        subType: selectedSubType || null, // This should be the display format as backend will handle conversion
+        type: selectedType,
+        subType: selectedSubType || null,
         features: selectedFeatures,
         street: formData.street,
         lga: selectedLGA,
@@ -364,12 +398,22 @@ export default function CreateListing() {
 
       console.log('Payload being sent:', payload);
 
-      const res = await apiRequest.post('/listing', payload);
-      toast.success('Listing created successfully!');
-      navigate('/property/' + res.data.slug);
+      let res;
+      if (isEdit) {
+        res = await apiRequest.put(`/listing/${params.id}`, payload);
+        toast.success('Listing updated successfully!');
+      } else {
+        res = await apiRequest.post('/listing', payload);
+        toast.success('Listing created successfully!');
+      }
+
+      navigate('/property/' + (res.data.slug || res.data.id));
     } catch (err) {
-      console.error('Error creating listing:', err);
-      toast.error(err.response?.data?.message || 'Failed to create listing');
+      console.error(`Error ${isEdit ? 'updating' : 'creating'} listing:`, err);
+      toast.error(
+        err.response?.data?.message ||
+          `Failed to ${isEdit ? 'update' : 'create'} listing`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -448,10 +492,12 @@ export default function CreateListing() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Create Property Listing
+            {isEdit ? 'Edit Property Listing' : 'Create Property Listing'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Follow the steps below to list your property
+            {isEdit
+              ? 'Update your property information'
+              : 'Follow the steps below to list your property'}
           </p>
         </div>
 
@@ -571,12 +617,14 @@ export default function CreateListing() {
                   {isLoading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Publishing...</span>
+                      <span>{isEdit ? 'Updating...' : 'Publishing...'}</span>
                     </>
                   ) : (
                     <>
                       <Check size={20} />
-                      <span>Publish Listing</span>
+                      <span>
+                        {isEdit ? 'Update Listing' : 'Publish Listing'}
+                      </span>
                     </>
                   )}
                 </button>

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {
   Brands,
   Counter,
@@ -6,21 +7,27 @@ import {
   Services,
   Testimonial,
 } from '../components/common/page-components';
-import { Feeds, Filters, Hero, Invest, Speciality } from '../components/home';
+import { Feeds, Hero, Invest, Speciality } from '../components/home';
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = (searchUrl) => {
+    navigate(searchUrl);
+  };
+
   return (
     <div className="pt-16 px-[3%] md:px-[6%]">
-      <Hero />
-      <Filters />
-      <Invest />
-      <Speciality />
-      <Services />
+      <Hero onNavigate={handleNavigate} /> {/* Pass the navigation handler */}
+      {/* <Filters /> */}
+      {/* <Invest /> */}
+      {/* <Speciality /> */}
+      {/* <Services /> */}
       <Featured />
-      <Counter />
+      {/* <Counter /> */}
       <Projects />
-      <Testimonial />
-      <Brands />
+      {/* <Testimonial /> */}
+      {/* <Brands /> */}
       <Feeds />
     </div>
   );

@@ -43,6 +43,7 @@ import {
   propertyLoader,
   singlePropertyLoader,
   agentLoader,
+  editListingLoader,
 } from './helper/loader';
 import { SaveProperty, UserListing, Dashboard } from './components/dashboard';
 
@@ -59,6 +60,7 @@ import BlogComments from './components/blog/BlogComments';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import VerifyEmail from './pages/VerifyEmail.jsx';
 import AutoLogout from './components/common/AutoLogout.jsx';
+import AccountSettings from './pages/AccountSettings.jsx';
 
 // Import Error Components
 import AgentErrorPage from './components/error/AgentErrorPage.jsx';
@@ -67,6 +69,9 @@ import RequestForm from './components/forms/RequestForm.jsx';
 import ViewRequests from './pages/ViewRequests.jsx';
 import MyRequests from './pages/MyRequest.jsx';
 import DashboardRequest from './components/dashboard/DashboardRequest.jsx';
+
+// IMPORTANT: Import apiRequest for the edit listing loader
+import apiRequest from './helper/apiRequest.js';
 
 const router = createBrowserRouter([
   {
@@ -135,6 +140,12 @@ const router = createBrowserRouter([
           { path: '/profile', element: <Profile /> },
           { path: '/create-listing', element: <CreateListing /> },
           {
+            path: '/edit-listing/:id',
+            element: <CreateListing />, // Remove isEdit prop, handle it in component
+            loader: editListingLoader, // Use the dedicated loader
+            errorElement: <GeneralErrorPage />,
+          },
+          {
             path: '/dashboard/property-request',
             element: <DashboardRequest />,
           },
@@ -150,6 +161,7 @@ const router = createBrowserRouter([
             loader: profilePageLoader,
             errorElement: <GeneralErrorPage />,
           },
+          { path: '/account-settings', element: <AccountSettings /> },
         ],
       },
       {

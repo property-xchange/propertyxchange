@@ -337,6 +337,28 @@ export const userData = [
   },
 ];
 
+export const features = [
+  'Boys-Quarter',
+  'Children Playing Ground',
+  'Free Coffee',
+  'Security',
+  'Excision',
+  'Free Wifi',
+  'Parking Space',
+  'Gym',
+  'Swimming pool',
+  'Church Nearby',
+  'Child Care',
+  'Restaurant Nearby',
+  'Security Doors',
+  'Printing Service',
+  'Fast Internet',
+  'Big Compound',
+  'Survey',
+  'CCTV Cameras',
+  'Jacuzzi',
+];
+
 export const property = [
   {
     id: 1,
@@ -1664,6 +1686,59 @@ export const propertyTypes = [
     image: '/images/property (20).jpg',
   },
 ];
+
+export const propertySubTypes = {
+  'Co-working Space': [
+    'Conference Room',
+    'Desk',
+    'Meeting Room',
+    'Private Office',
+    'Workstation',
+  ],
+  'Commercial Property': [
+    'Church',
+    'Event Center',
+    'Factory',
+    'Filling Station',
+    'Hotel Guest House',
+    'Office Space',
+    'School',
+    'Shop',
+    'Shop in Mall',
+    'Show Room',
+    'Tank Farm',
+    'Warehouse',
+  ],
+  'Flat/Apartment': [
+    'Boys Quarter',
+    'Mini Flat',
+    'Penthouse',
+    'Self Contain',
+    'Shared Apartment',
+    'Studio Apartment',
+  ],
+  House: [
+    'Block of Flats',
+    'Detached Bungalow',
+    'Detached Duplex',
+    'Massionette',
+    'Semi Detached Bungalow',
+    'Semi Detached Duplex',
+    'Terraced Bungalow',
+    'Terraced Duplex',
+  ],
+  Land: [
+    'Commercial Land',
+    'Industrial Land',
+    'Joint Venture Land',
+    'Mixed Use Land',
+    'Residential Land',
+    'Serviced Residential Land',
+  ],
+};
+
+export const purposes = ['sale', 'rent', 'short-let', 'joint-venture'];
+
 export const priceRanges = [
   {
     id: 1,

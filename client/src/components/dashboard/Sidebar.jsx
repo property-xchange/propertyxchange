@@ -8,6 +8,7 @@ import { FiMessageSquare } from 'react-icons/fi';
 import { FaListCheck } from 'react-icons/fa6';
 import { LuTicket } from 'react-icons/lu';
 import { TiMessages } from 'react-icons/ti';
+import { IoSettingsOutline } from 'react-icons/io5';
 import { FaRegHeart, FaEdit, FaComments } from 'react-icons/fa';
 import { CgWebsite } from 'react-icons/cg';
 import { IoMdLogOut } from 'react-icons/io';
@@ -124,6 +125,12 @@ const Sidebar = ({ isFolded }) => {
       path: '/profile',
       icon: CgProfile,
       label: 'Profile',
+      roles: ['USER', 'STAFF', 'ADMIN'],
+    },
+    {
+      path: '/account-settings',
+      icon: IoSettingsOutline,
+      label: 'Account Settings',
       roles: ['USER', 'STAFF', 'ADMIN'],
     },
     // Other features
