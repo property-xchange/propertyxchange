@@ -61,7 +61,7 @@ const SingleProductCard = ({
           <img
             src={getImageSrc()}
             alt={name || 'Property image'}
-            className="w-full h-fit md:h-[250px] object-cover group-hover:scale-125 transition-a"
+            className="w-full h-[250px] md:h-[250px] object-cover group-hover:scale-125 transition-a"
             onError={(e) => {
               e.target.src = fallbackImage;
             }}
