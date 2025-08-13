@@ -12,37 +12,85 @@ import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 
 const ShareLinks = () => {
-  const pageUrl = encodeURIComponent(window.location.href);
+  // Safely get current page URL
+  const getCurrentUrl = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.href;
+    }
+    return '';
+  };
+
+  const pageUrl = encodeURIComponent(getCurrentUrl());
+  const currentUrl = getCurrentUrl();
 
   const shareOnWhatsApp = () => {
-    window.open(`https://api.whatsapp.com/send?text=${pageUrl}`);
+    if (pageUrl) {
+      window.open(`https://api.whatsapp.com/send?text=${pageUrl}`, '_blank');
+    }
   };
 
   const shareOnFacebook = () => {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`);
+    if (pageUrl) {
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+        '_blank'
+      );
+    }
   };
 
   const shareOnTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?url=${pageUrl}`);
+    if (pageUrl) {
+      window.open(`https://twitter.com/intent/tweet?url=${pageUrl}`, '_blank');
+    }
   };
 
   const shareOnLinkedIn = () => {
-    window.open(`https://www.linkedin.com/shareArticle?url=${pageUrl}`);
+    if (pageUrl) {
+      window.open(
+        `https://www.linkedin.com/shareArticle?url=${pageUrl}`,
+        '_blank'
+      );
+    }
   };
 
-  const copyUrlToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('URL Copied to Clipboard');
+  const copyUrlToClipboard = async () => {
+    if (!currentUrl) {
+      toast.error('Unable to copy URL');
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(currentUrl);
+        toast.success('URL Copied to Clipboard');
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = currentUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success('URL Copied to Clipboard');
+      }
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      toast.error('Failed to copy URL');
+    }
   };
+
+  // Don't render if no URL available
+  if (!currentUrl) {
+    return null;
+  }
 
   return (
     <div className="border dark:border-dark mt-3">
       <div className="flex justify-center items-center bg-secondary py-3 gap-3 text-white">
         <FaShare className="text-xl" />
-        <h1 className="uppercas">Share this property</h1>
+        <h1 className="uppercase">Share this property</h1>
       </div>
-      <Tooltip />
-      <div className="flex justify-center items-center p-3 gap-2">
+      <div className="flex justify-center items-center p-3 gap-2 flex-wrap">
         <button
           data-tooltip-id="whatsapp"
           data-tooltip-content="Share on WhatsApp"
@@ -52,6 +100,7 @@ const ShareLinks = () => {
           <FaWhatsapp className="text-xl" />
         </button>
         <Tooltip id="whatsapp" />
+
         <button
           data-tooltip-id="facebook"
           data-tooltip-content="Share on Facebook"
@@ -61,6 +110,7 @@ const ShareLinks = () => {
           <FaFacebook className="text-xl" />
         </button>
         <Tooltip id="facebook" />
+
         <button
           data-tooltip-id="twitter"
           data-tooltip-content="Share on Twitter"
@@ -70,6 +120,7 @@ const ShareLinks = () => {
           <BsTwitterX className="text-xl" />
         </button>
         <Tooltip id="twitter" />
+
         <button
           data-tooltip-id="linkedin"
           data-tooltip-content="Share on LinkedIn"

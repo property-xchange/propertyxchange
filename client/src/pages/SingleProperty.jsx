@@ -18,7 +18,6 @@ import {
 } from '@chakra-ui/react';
 import Slider from '../components/common/page-components/Slider';
 import { CiLocationOn } from 'react-icons/ci';
-import { property } from '../data/dummyData';
 import { TbBed } from 'react-icons/tb';
 import { PiToilet } from 'react-icons/pi';
 import { TbBath } from 'react-icons/tb';
@@ -45,7 +44,7 @@ import DOMPurify from 'dompurify';
 const SingleProperty = () => {
   const listing = useLoaderData();
   const navigate = useNavigate();
-  const [saved, setSaved] = useState(listing.isSaved);
+  const [saved, setSaved] = useState(listing?.isSaved || false);
   const { currentUser } = useContext(AuthContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -58,6 +57,60 @@ const SingleProperty = () => {
     );
   }
 
+  // Safe data extraction with fallbacks
+  const propertyData = {
+    id: listing.id || '',
+    name: listing.name || 'Unnamed Property',
+    street: listing.street || 'Unknown location',
+    lga: listing.lga || '',
+    state: listing.state || '',
+    price: listing.price || 0,
+    appendTo: listing.appendTo || '',
+    offer: listing.offer || false,
+    discountPrice: listing.discountPrice || 0,
+    discountPercent: listing.discountPercent || 0,
+    discountEndDate: listing.discountEndDate || '',
+    verification: listing.verification || false,
+    images: listing.images || [],
+    initialPayment: listing.initialPayment || 0,
+    installmentPayment: listing.installmentPayment || 0,
+    installmentAppendTo: listing.installmentAppendTo || 'month',
+    duration: listing.duration || 0,
+    number_of_beds: listing.number_of_beds || 0,
+    toilets: listing.toilets || 0,
+    number_of_bathrooms: listing.number_of_bathrooms || 0,
+    furnished: listing.furnished || false,
+    parking: listing.parking || false,
+    serviced: listing.serviced || false,
+    newlyBuilt: listing.newlyBuilt || false,
+    features: listing.features || [],
+    description: listing.description || 'No description available',
+    youtubeLink: listing.youtubeLink || '',
+    user: {
+      profilePhoto: listing.user?.profilePhoto || '',
+      firstName: listing.user?.firstName || '',
+      username: listing.user?.username || 'Unknown User',
+      verified: listing.user?.verified || false,
+    },
+    verified: listing.verified || false,
+  };
+
+  // Format price safely
+  const formatPrice = (priceValue) => {
+    if (!priceValue || priceValue === 0) return '0';
+    return new Intl.NumberFormat('en-NG').format(priceValue);
+  };
+
+  // Format discount end date safely
+  const getDiscountEndText = () => {
+    if (!propertyData.discountEndDate) return '';
+    try {
+      return 'Discount ends ' + moment(propertyData.discountEndDate).fromNow();
+    } catch (error) {
+      return 'Limited time discount';
+    }
+  };
+
   const handleSave = async () => {
     if (!currentUser) {
       navigate('/login');
@@ -66,11 +119,11 @@ const SingleProperty = () => {
 
     try {
       if (saved) {
-        await apiRequest.post('/user/save', { listingId: listing.id });
+        await apiRequest.post('/user/save', { listingId: propertyData.id });
         setSaved(false);
         toast('Property unsaved');
       } else {
-        await apiRequest.post('/user/save', { listingId: listing.id });
+        await apiRequest.post('/user/save', { listingId: propertyData.id });
         setSaved(true);
         toast('Property saved');
       }
@@ -85,9 +138,11 @@ const SingleProperty = () => {
     <div className="pt-14 px-[3%] md:px-[6%]">
       <div className="grid md:grid-cols-12 gap-x-4 mt-5 w-full">
         <div className="md:col-span-8 mt-5 md:mt-0 h-fit md:sticky top-0">
-          <div className="flex justify-between items-center mb-3">
-            <h1 className="text-2xl font-bold md:text-3xl">{listing.name}</h1>
-            {listing.verification ? (
+          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+            <h1 className="text-2xl font-bold md:text-3xl">
+              {propertyData.name}
+            </h1>
+            {propertyData.verification ? (
               <span className="flex gap-1 text-green-400 justify-center items-center md:text-xl sm:text-xs font-bold">
                 <GoVerified className="text-xl" /> Verified Property
               </span>
@@ -98,77 +153,74 @@ const SingleProperty = () => {
             )}
           </div>
           <div className="p-8 md:p-0 relative w-full">
-            <Slider images={listing.images} />
+            <Slider images={propertyData.images} />
             <div className="py-5 flex flex-col gap-3">
-              <div className="flex gap-3">
-                <div className="w-3/4 flex flex-col gap-2">
+              <div className="flex gap-3 flex-col lg:flex-row">
+                <div className="w-full lg:w-3/4 flex flex-col gap-2">
                   <div>
-                    <div className="flex">
-                      <CiLocationOn className="w-10 h-10 mr-1 md:w-7 md:h-7" />
+                    <div className="flex items-center">
+                      <CiLocationOn className="w-10 h-10 mr-1 md:w-7 md:h-7 flex-shrink-0" />
                       <span className="text-sm font-normal">
-                        {listing.street}
+                        {propertyData.street}
                       </span>
                     </div>
                     <p className="uppercase">
-                      {listing.lga}/{listing.state}
+                      {propertyData.lga}/{propertyData.state}
                     </p>
                   </div>
                   <div className="flex justify-start items-center gap-2 flex-wrap">
-                    {listing.offer ? (
+                    {propertyData.offer ? (
                       <>
                         <span className="text-lg font-bold rounded-md text-red-400 line-through">
-                          ₦{listing.price}
-                          {listing.appendTo}
+                          ₦{formatPrice(propertyData.price)}
+                          {propertyData.appendTo}
                         </span>
                         <span className="text-lg font-bold rounded-md text-primary">
-                          ₦{listing.discountPrice}
-                          {listing.appendTo}
+                          ₦{formatPrice(propertyData.discountPrice)}
+                          {propertyData.appendTo}
                         </span>
                       </>
                     ) : (
-                      <>
-                        <span className="text-lg font-bold rounded-md text-blue-400">
-                          ₦{listing.price}/{listing.appendTo}
-                        </span>
-                        <span></span>
-                      </>
+                      <span className="text-lg font-bold rounded-md text-blue-400">
+                        ₦{formatPrice(propertyData.price)}/
+                        {propertyData.appendTo}
+                      </span>
                     )}
-                    {listing.offer && (
+                    {propertyData.offer && (
                       <>
                         <span className="text-green-400 text-xs bg-secondary rounded-md py-1 px-2">
-                          {listing.discountPercent}% Discount
+                          {propertyData.discountPercent}% Discount
                         </span>
                         <span className="text-green-400 text-xs bg-secondary rounded-md py-1 px-2">
-                          {'Discount ends' +
-                            ' ' +
-                            moment(listing.discountEndDate).fromNow()}
+                          {getDiscountEndText()}
                         </span>
                       </>
                     )}
                   </div>
-                  {listing.initialPayment && (
-                    <div className="border  dark:border-dark p-2 px-4 rounded-md">
+                  {propertyData.initialPayment > 0 && (
+                    <div className="border dark:border-dark p-2 px-4 rounded-md">
                       <h2 className="uppercase font-bold border-b border-1 dark:border-dark mb-2">
                         Installment Payment
                       </h2>
-                      <div className="flex justify-between items-center flex-wrap text-sm">
-                        <div className=" mb-1">
+                      <div className="flex justify-between items-center flex-wrap text-sm gap-2">
+                        <div className="mb-1">
                           Initial Payment:{' '}
                           <span className="bg-secondary text-green-400 rounded-md py-1 px-2">
-                            ₦{listing.initialPayment}
+                            ₦{formatPrice(propertyData.initialPayment)}
                           </span>
                         </div>
-                        <div className=" mb-1">
-                          {listing.installmentAppendTo}ly Installment:{' '}
+                        <div className="mb-1">
+                          {propertyData.installmentAppendTo}ly Installment:{' '}
                           <span className="bg-secondary text-green-400 rounded-md py-1 px-2">
-                            ₦{listing.installmentPayment}
+                            ₦{formatPrice(propertyData.installmentPayment)}
                           </span>
                         </div>
-                        <div className=" mb-1">
+                        <div className="mb-1">
                           Duration:{' '}
                           <span className="bg-secondary text-green-400 rounded-md py-1 px-2">
-                            {listing.duration} {listing.installmentAppendTo}
-                            {listing.duration > 1 ? 's' : ''}
+                            {propertyData.duration}{' '}
+                            {propertyData.installmentAppendTo}
+                            {propertyData.duration > 1 ? 's' : ''}
                           </span>
                         </div>
                       </div>
@@ -183,7 +235,7 @@ const SingleProperty = () => {
                       <div className="icon-box !w-7 !h-7 bg-primary/20 hover:!bg-primary/40 text-primary">
                         <TbBed className="text-xl" />
                       </div>
-                      <p>{listing.number_of_beds}</p>
+                      <p>{propertyData.number_of_beds}</p>
                     </span>
                     <Tooltip className="rounded-md" id="bed" />
 
@@ -195,7 +247,7 @@ const SingleProperty = () => {
                       <div className="icon-box !w-7 !h-7 bg-primary/20 hover:!bg-primary/40 text-primary">
                         <PiToilet className="text-xl" />
                       </div>
-                      <p>{listing.toilets}</p>
+                      <p>{propertyData.toilets}</p>
                     </span>
                     <Tooltip className="rounded-md" id="toilet" />
                     <span
@@ -206,11 +258,11 @@ const SingleProperty = () => {
                       <div className="icon-box !w-7 !h-7 bg-primary/20 hover:!bg-primary/40 text-primary">
                         <TbBath className="text-xl" />
                       </div>
-                      <p>{listing.number_of_bathrooms}</p>
+                      <p>{propertyData.number_of_bathrooms}</p>
                     </span>
                     <Tooltip className="rounded-md" id="bathroom" />
                     <span className="flex justify-between items-center gap-1 p-2 border dark:border-dark rounded-md">
-                      {listing.furnished ? (
+                      {propertyData.furnished ? (
                         <>
                           <p>Furnished</p>
                           <FaCheck className="text-green-400" />
@@ -223,7 +275,7 @@ const SingleProperty = () => {
                       )}
                     </span>
                     <span className="flex justify-between items-center gap-1 p-2 border dark:border-dark rounded-md">
-                      {listing.parking ? (
+                      {propertyData.parking ? (
                         <>
                           <p>parking</p>
                           <FaCheck className="text-green-400" />
@@ -236,7 +288,7 @@ const SingleProperty = () => {
                       )}
                     </span>
                     <span className="flex justify-between items-center gap-1 p-2 border dark:border-dark rounded-md">
-                      {listing.serviced ? (
+                      {propertyData.serviced ? (
                         <>
                           <p>Serviced</p>
                           <FaCheck className="text-green-400" />
@@ -249,7 +301,7 @@ const SingleProperty = () => {
                       )}
                     </span>
                     <span className="flex justify-between items-center gap-1 p-2 border dark:border-dark rounded-md">
-                      {listing.newlyBuilt ? (
+                      {propertyData.newlyBuilt ? (
                         <>
                           <p>Newly Built</p>
                           <FaCheck className="text-green-400" />
@@ -263,14 +315,19 @@ const SingleProperty = () => {
                     </span>
                   </div>
                 </div>
-                <div className="w-1/4 flex flex-col justify-center items-center gap-1 bg-secondary rounded-md p-3">
+                <div className="w-full lg:w-1/4 flex flex-col justify-center items-center gap-1 bg-secondary rounded-md p-3">
                   <img
-                    src={listing.user.profilePhoto || Avatar}
-                    alt={listing.user.firstName + `-pics`}
+                    src={propertyData.user.profilePhoto || Avatar}
+                    alt={propertyData.user.firstName + `-pics`}
                     className="rounded-full h-20 w-20 object-cover"
+                    onError={(e) => {
+                      e.target.src = Avatar;
+                    }}
                   />
-                  <span className="text-blue-400">{listing.user.username}</span>
-                  {listing.verified ? (
+                  <span className="text-blue-400 text-center">
+                    {propertyData.user.username}
+                  </span>
+                  {propertyData.user.verified ? (
                     <span className="flex gap-1 text-green-400 justify-center items-center text-sm font-bold">
                       <GoVerified className="text-sm" /> Verified Agent
                     </span>
@@ -284,25 +341,20 @@ const SingleProperty = () => {
                   </Link>
                 </div>
               </div>
-              <div>
-                {listing.features.map((feature, index) => (
+              <div className="flex flex-wrap gap-2">
+                {propertyData.features.map((feature, index) => (
                   <div
-                    key={index}
-                    className="bg-secondary inline-block ml-2 py-1 px-2 mb-2 rounded-md text-blue-400 text-xs font-bold"
-                  >
-                    {feature}
-                  </div>
-                ))}
-                {listing.features.map((feature, index) => (
-                  <div
-                    key={index}
-                    className="bg-secondary inline-block ml-2 py-1 px-2 mb-2 rounded-md text-blue-400 text-xs font-bold"
+                    key={`feature-${index}`}
+                    className="bg-secondary inline-block py-1 px-2 mb-2 rounded-md text-blue-400 text-xs font-bold"
                   >
                     {feature}
                   </div>
                 ))}
               </div>
-              <Tabs variant="enclosed" transition="opacity 0.3s ease-in-out">
+              <Tabs
+                variant="enclosed"
+                className="transition-opacity duration-300 ease-in-out"
+              >
                 <TabList>
                   <Tab>Description</Tab>
                   <Tab>Video</Tab>
@@ -313,24 +365,26 @@ const SingleProperty = () => {
                   <TabPanel>
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(listing.description),
+                        __html: DOMPurify.sanitize(propertyData.description),
                       }}
                     />
                   </TabPanel>
                   <TabPanel>
-                    <YouTubeVideo youtubeLink={listing.youtubeLink} />
+                    <YouTubeVideo youtubeLink={propertyData.youtubeLink} />
                   </TabPanel>
                   <TabPanel>
-                    <Map listings={property} />
+                    <Map listings={[listing]} />
                   </TabPanel>
-                  <TabPanel></TabPanel>
+                  <TabPanel>
+                    <p>No reviews available yet.</p>
+                  </TabPanel>
                 </TabPanels>
               </Tabs>
             </div>
           </div>
         </div>
         <div className="md:col-span-4 row-start-3 md:row-start-auto h-fit md:sticky top-0">
-          <div className="flex justify-between items-center gap-3">
+          <div className="flex justify-between items-center gap-3 flex-wrap">
             <Link
               className={`flex justify-center items-center gap-2 text-xs py-3 rounded-md px-4 uppercase transition-all duration-300 ${
                 saved
