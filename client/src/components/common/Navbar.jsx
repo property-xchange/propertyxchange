@@ -44,9 +44,13 @@ const Navbar = () => {
 
   // Store darkmode value to localStorage;
   useEffect(() => {
-    if (darkMode) rootDoc.classList.add('dark');
-    else rootDoc.classList.remove('dark');
-    localStorage.setItem('theme-mode', JSON.stringify(darkMode));
+    if (darkMode) {
+      rootDoc.classList.add('dark');
+    } else {
+      rootDoc.classList.remove('dark');
+    }
+    // Use consistent key name
+    localStorage.setItem('Martvilla-theme-mode', JSON.stringify(darkMode));
   }, [darkMode]);
 
   const handleClose = (e) => {

@@ -30,6 +30,7 @@ import { IoMdHeartEmpty } from 'react-icons/io';
 import { GoReport } from 'react-icons/go';
 import toast from 'react-hot-toast';
 import ShareLinks from '../components/common/page-components/SharedLinks';
+import ReviewsDisplay from '../components/dashboard/ReviewDisplay.jsx';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 import Request from '../components/common/page-components/property-filters/Request';
@@ -376,7 +377,7 @@ const SingleProperty = () => {
                     <Map listings={[listing]} />
                   </TabPanel>
                   <TabPanel>
-                    <p>No reviews available yet.</p>
+                    <ReviewsDisplay listingId={propertyData.id} />
                   </TabPanel>
                 </TabPanels>
               </Tabs>

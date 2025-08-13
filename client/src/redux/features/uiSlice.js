@@ -1,7 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { navLinks } from '../../data/navLinks.js';
 
-const mode = JSON.parse(localStorage.getItem('Martvilla-theme-mode')) || false;
+// Check for saved theme preference or default to dark mode
+const getInitialTheme = () => {
+  const savedTheme = localStorage.getItem('Martvilla-theme-mode');
+  if (savedTheme !== null) {
+    return JSON.parse(savedTheme);
+  }
+  // Default to dark mode
+  return true;
+};
+
+const mode = getInitialTheme();
 
 const initialState = {
   isDropdownOpen: false,
@@ -54,6 +64,10 @@ const uiSlice = createSlice({
     toggleDarkMode: (state) => {
       state.darkMode = !state.darkMode;
     },
+    // ADD THIS NEW ACTION
+    setDarkMode: (state, action) => {
+      state.darkMode = action.payload;
+    },
   },
 });
 
@@ -71,6 +85,7 @@ export const {
   openFilterMenu,
   closeFilterMenu,
   toggleDarkMode,
+  setDarkMode,
   openAgentInfo,
   closeAgentInfo,
 } = uiSlice.actions;

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setDarkMode, uiStore } from './redux/features/uiSlice';
 import { Outlet, useLocation } from 'react-router-dom';
 import BackToTopButton from './components/common/BackToTopButton';
 import Footer from './components/common/Footer';
@@ -7,7 +8,6 @@ import Navbar from './components/common/Navbar';
 import { closeDropdown } from './redux/features/uiSlice';
 import Dropdown from './components/common/DropDown';
 import NewsLetter from './components/common/NewsLetter';
-import Loader from './components/common/Loader';
 import { useAuthStore } from './zustand/store';
 import { Toaster } from 'react-hot-toast';
 
@@ -19,6 +19,7 @@ function App() {
   const dispatch = useDispatch();
   const location = useLocation();
   const { checkAuth, isCheckingAuth } = useAuthStore();
+  const { darkMode } = useSelector(uiStore);
 
   // Memoized scroll handler to prevent recreation on every render
   const handleScroll = useCallback(() => {
@@ -29,6 +30,30 @@ function App() {
   const handleCloseDropdown = useCallback(() => {
     dispatch(closeDropdown());
   }, [dispatch]);
+
+  useEffect(() => {
+    // Initialize dark mode on app load
+    const rootDoc = document.querySelector(':root');
+    const savedTheme = localStorage.getItem('Martvilla-theme-mode');
+
+    let initialDarkMode = true; // Default to dark mode
+
+    if (savedTheme !== null) {
+      initialDarkMode = JSON.parse(savedTheme);
+    }
+
+    // Apply the theme
+    if (initialDarkMode) {
+      rootDoc.classList.add('dark');
+    } else {
+      rootDoc.classList.remove('dark');
+    }
+
+    // Update Redux state if different from current
+    if (darkMode !== initialDarkMode) {
+      dispatch(setDarkMode(initialDarkMode));
+    }
+  }, [dispatch, darkMode]);
 
   // Handle scroll to top button visibility
   useEffect(() => {

@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LuLayoutDashboard } from 'react-icons/lu';
 import { FaListUl, FaBlog, FaUsers } from 'react-icons/fa';
+import { MdRateReview } from 'react-icons/md';
 import { MdOutlineAutoGraph, MdCategory } from 'react-icons/md';
 import { CgProfile } from 'react-icons/cg';
 import { FiMessageSquare } from 'react-icons/fi';
@@ -105,6 +106,12 @@ const Sidebar = ({ isFolded }) => {
       path: '/blog-comments',
       icon: FaComments,
       label: 'Manage Comments',
+      roles: ['STAFF', 'ADMIN'],
+    },
+    {
+      path: '/review-management',
+      icon: MdRateReview,
+      label: 'Review Management',
       roles: ['STAFF', 'ADMIN'],
     },
     // User Management (Admin only)

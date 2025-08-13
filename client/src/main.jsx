@@ -72,6 +72,7 @@ import DashboardRequest from './components/dashboard/DashboardRequest.jsx';
 
 // IMPORTANT: Import apiRequest for the edit listing loader
 import apiRequest from './helper/apiRequest.js';
+import ReviewManagement from './components/dashboard/ReviewManagement.jsx';
 
 const router = createBrowserRouter([
   {
@@ -172,6 +173,7 @@ const router = createBrowserRouter([
           { path: '/edit-blog/:id', element: <CreateEditBlog /> },
           { path: '/blog-comments', element: <BlogComments /> },
           { path: '/listing-management', element: <ListingManagement /> },
+          { path: '/review-management', element: <ReviewManagement /> },
         ],
       },
       {
