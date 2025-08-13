@@ -31,7 +31,7 @@ const Featured = () => {
     if (typeof window === 'undefined') return 3;
     if (window.innerWidth < 768) return 1; // Mobile
     if (window.innerWidth < 1024) return 2; // Tablet
-    return 3; // Desktop
+    return 3; // Desktop and Large screens - Always 3
   };
 
   const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
@@ -104,6 +104,7 @@ const Featured = () => {
 
   const maxIndex = Math.max(0, featuredProperties.length - itemsPerSlide);
   const totalSlides = Math.ceil(featuredProperties.length / itemsPerSlide);
+  const needsSlider = featuredProperties.length > itemsPerSlide;
 
   return (
     <div className="pt-10 pb-16">
@@ -113,8 +114,8 @@ const Featured = () => {
       </div>
 
       <div className="relative mt-8">
-        {/* Navigation Buttons */}
-        {featuredProperties.length > itemsPerSlide && (
+        {/* Navigation Buttons - Only show if more than itemsPerSlide */}
+        {needsSlider && (
           <>
             <button
               onClick={prevSlide}
@@ -141,52 +142,90 @@ const Featured = () => {
 
         {/* Properties Container */}
         <div className="overflow-hidden mx-8 md:mx-12">
-          <div
-            className="flex gap-4 transition-transform duration-300 ease-in-out"
-            style={{
-              transform: `translateX(-${
-                currentIndex * (100 / itemsPerSlide)
-              }%)`,
-              width: `${(featuredProperties.length / itemsPerSlide) * 100}%`,
-            }}
-          >
-            {featuredProperties.map((property) => (
-              <div
-                key={property.id}
-                className={`flex-none ${
-                  itemsPerSlide === 1
-                    ? 'w-full'
-                    : itemsPerSlide === 2
-                    ? 'w-1/2'
-                    : 'w-1/3'
-                } px-2`}
-              >
-                <SingleProductCard
-                  id={property?.id}
-                  slug={property?.slug || ''}
-                  name={property?.name || 'Unnamed Property'}
-                  street={property?.street || 'Unknown location'}
-                  price={property?.price || 0}
-                  toilets={property?.toilets || 0}
-                  installments={property?.installment || false}
-                  purpose={property?.purpose || ''}
-                  number_of_beds={property?.number_of_beds || 0}
-                  number_of_bathrooms={property?.number_of_bathrooms || 0}
-                  offer={property?.offer || false}
-                  discountPrice={property?.discountPrice || 0}
-                  discountEndDate={property?.discountEndDate || ''}
-                  appendTo={property?.appendTo || ''}
-                  images={property?.images || []}
-                  updatedAt={property?.updatedAt || ''}
-                  createdAt={property?.createdAt || ''}
-                />
-              </div>
-            ))}
-          </div>
+          {needsSlider ? (
+            // Slider layout for more than itemsPerSlide properties
+            <div
+              className="flex gap-4 transition-transform duration-300 ease-in-out"
+              style={{
+                transform: `translateX(-${
+                  currentIndex * (100 / itemsPerSlide)
+                }%)`,
+              }}
+            >
+              {featuredProperties.map((property) => (
+                <div
+                  key={property.id}
+                  className={`flex-none ${
+                    itemsPerSlide === 1
+                      ? 'w-full'
+                      : itemsPerSlide === 2
+                      ? 'w-1/2'
+                      : 'w-1/3'
+                  } px-2`}
+                  style={{ minWidth: `${100 / itemsPerSlide}%` }}
+                >
+                  <SingleProductCard
+                    id={property?.id}
+                    slug={property?.slug || ''}
+                    name={property?.name || 'Unnamed Property'}
+                    street={property?.street || 'Unknown location'}
+                    price={property?.price || 0}
+                    toilets={property?.toilets || 0}
+                    installments={property?.installment || false}
+                    purpose={property?.purpose || ''}
+                    number_of_beds={property?.number_of_beds || 0}
+                    number_of_bathrooms={property?.number_of_bathrooms || 0}
+                    offer={property?.offer || false}
+                    discountPrice={property?.discountPrice || 0}
+                    discountEndDate={property?.discountEndDate || ''}
+                    appendTo={property?.appendTo || ''}
+                    images={property?.images || []}
+                    updatedAt={property?.updatedAt || ''}
+                    createdAt={property?.createdAt || ''}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Grid layout for itemsPerSlide or fewer properties
+            <div
+              className={`grid gap-4 ${
+                itemsPerSlide === 1
+                  ? 'grid-cols-1'
+                  : itemsPerSlide === 2
+                  ? 'grid-cols-1 md:grid-cols-2'
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              }`}
+            >
+              {featuredProperties.map((property) => (
+                <div key={property.id}>
+                  <SingleProductCard
+                    id={property?.id}
+                    slug={property?.slug || ''}
+                    name={property?.name || 'Unnamed Property'}
+                    street={property?.street || 'Unknown location'}
+                    price={property?.price || 0}
+                    toilets={property?.toilets || 0}
+                    installments={property?.installment || false}
+                    purpose={property?.purpose || ''}
+                    number_of_beds={property?.number_of_beds || 0}
+                    number_of_bathrooms={property?.number_of_bathrooms || 0}
+                    offer={property?.offer || false}
+                    discountPrice={property?.discountPrice || 0}
+                    discountEndDate={property?.discountEndDate || ''}
+                    appendTo={property?.appendTo || ''}
+                    images={property?.images || []}
+                    updatedAt={property?.updatedAt || ''}
+                    createdAt={property?.createdAt || ''}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Dots Indicator */}
-        {featuredProperties.length > itemsPerSlide && (
+        {/* Dots Indicator - Only show if more than itemsPerSlide */}
+        {needsSlider && (
           <div className="flex justify-center mt-6 space-x-2">
             {Array.from({ length: totalSlides }).map((_, index) => (
               <button
