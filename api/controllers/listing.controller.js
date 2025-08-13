@@ -799,6 +799,7 @@ export const deleteListing = async (req, res) => {
   const userRole = req.userRole;
 
   try {
+    // Check if listing exists and get listing details
     const listing = await prisma.listing.findUnique({
       where: { id },
       include: {
@@ -810,12 +811,24 @@ export const deleteListing = async (req, res) => {
             lastName: true,
           },
         },
+        savedListing: true, // Include saved listings to check relationships
+        reviews: true, // Include reviews to check relationships
+        requestResponses: true, // Include request responses
       },
     });
 
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found' });
     }
+
+    console.log('Listing found:', {
+      listingId: listing.id,
+      listingSlug: listing.slug,
+      listingName: listing.name,
+      savedListingsCount: listing.savedListing?.length || 0,
+      reviewsCount: listing.reviews?.length || 0,
+      requestResponsesCount: listing.requestResponses?.length || 0,
+    });
 
     // Check permissions:
     // - Users can only delete their own listings
@@ -827,30 +840,76 @@ export const deleteListing = async (req, res) => {
       });
     }
 
-    // Delete the listing (this will cascade delete related records due to Prisma schema)
-    await prisma.listing.delete({
-      where: { id },
+    // Use transaction to safely delete all related records
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete all saved listings first
+      if (listing.savedListing?.length > 0) {
+        await tx.savedListing.deleteMany({
+          where: { listingId: id },
+        });
+        console.log(`Deleted ${listing.savedListing.length} saved listings`);
+      }
+
+      // Delete all reviews for this listing
+      if (listing.reviews?.length > 0) {
+        await tx.listingReview.deleteMany({
+          where: { listingId: id },
+        });
+        console.log(`Deleted ${listing.reviews.length} reviews`);
+      }
+
+      // Delete all request responses for this listing
+      if (listing.requestResponses?.length > 0) {
+        await tx.requestResponse.deleteMany({
+          where: { listingId: id },
+        });
+        console.log(
+          `Deleted ${listing.requestResponses.length} request responses`
+        );
+      }
+
+      // Now delete the listing itself
+      await tx.listing.delete({
+        where: { id },
+      });
+
+      console.log(`Deleted listing: ${listing.name}`);
+
+      return {
+        deletedListing: {
+          id: listing.id,
+          name: listing.name,
+          slug: listing.slug,
+          owner: listing.user.firstName || listing.user.username,
+        },
+        relatedRecordsDeleted: {
+          savedListings: listing.savedListing?.length || 0,
+          reviews: listing.reviews?.length || 0,
+          requestResponses: listing.requestResponses?.length || 0,
+        },
+      };
     });
 
     // Create notification for listing owner if deleted by admin/staff
     if (userRole !== 'USER' && listing.userId !== tokenUserId) {
-      await createNotification(
-        listing.userId,
-        'Listing Deleted',
-        `Your property listing "${listing.name}" has been deleted by an administrator`,
-        'GENERAL',
-        'listing',
-        listing.id
-      );
+      try {
+        await createNotification(
+          listing.userId,
+          'Listing Deleted',
+          `Your property listing "${listing.name}" has been deleted by an administrator`,
+          'GENERAL',
+          'listing',
+          listing.id
+        );
+      } catch (notificationError) {
+        console.error('Failed to create notification:', notificationError);
+        // Don't fail the entire operation if notification fails
+      }
     }
 
     res.status(200).json({
-      message: 'Listing deleted successfully',
-      deletedListing: {
-        id: listing.id,
-        name: listing.name,
-        owner: listing.user.firstName || listing.user.username,
-      },
+      message: 'Listing and all related data deleted successfully',
+      ...result,
     });
   } catch (err) {
     console.error('Delete listing error:', err);
@@ -862,7 +921,15 @@ export const deleteListing = async (req, res) => {
 
     if (err.code === 'P2003') {
       return res.status(400).json({
-        message: 'Cannot delete listing due to existing dependencies',
+        message:
+          'Cannot delete listing due to existing dependencies. Please contact support.',
+      });
+    }
+
+    if (err.code === 'P2014') {
+      return res.status(400).json({
+        message:
+          'Cannot delete listing due to related saved listings or reviews. Please try again.',
       });
     }
 
@@ -1028,89 +1095,6 @@ export const rejectListing = async (req, res) => {
   }
 };
 
-export const addListingReview = async (req, res) => {
-  try {
-    const { listingId, rating, comment } = req.body;
-    const userId = req.userId;
-
-    // Check if user already reviewed this listing
-    const existingReview = await prisma.listingReview.findUnique({
-      where: {
-        listingId_authorId: {
-          listingId,
-          authorId: userId,
-        },
-      },
-    });
-
-    if (existingReview) {
-      return res
-        .status(400)
-        .json({ message: 'You have already reviewed this property' });
-    }
-
-    const review = await prisma.listingReview.create({
-      data: {
-        listingId,
-        authorId: userId,
-        rating,
-        comment,
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            profilePhoto: true,
-          },
-        },
-      },
-    });
-
-    // Notify admins/staff about new review
-    const adminsAndStaff = await prisma.user.findMany({
-      where: {
-        role: { in: ['ADMIN', 'STAFF'] },
-      },
-      select: { id: true },
-    });
-
-    for (const admin of adminsAndStaff) {
-      await createNotification(
-        admin.id,
-        'New Review Submitted',
-        `A new review has been submitted for approval`,
-        'REVIEW_SUBMITTED',
-        'review',
-        review.id
-      );
-    }
-
-    res.status(201).json(review);
-  } catch (error) {
-    console.error('Add review error:', error);
-    res.status(500).json({ message: 'Failed to add review!' });
-  }
-};
-
-export const approveReview = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const review = await prisma.listingReview.update({
-      where: { id },
-      data: { isApproved: true },
-    });
-
-    res.status(200).json(review);
-  } catch (error) {
-    console.error('Approve review error:', error);
-    res.status(500).json({ message: 'Failed to approve review!' });
-  }
-};
-
 export const getListingStats = async (req, res) => {
   try {
     const [
@@ -1199,5 +1183,467 @@ export const toggleFeatured = async (req, res) => {
   } catch (error) {
     console.error('Toggle featured error:', error);
     res.status(500).json({ message: 'Failed to update featured status' });
+  }
+};
+
+// Create a review for a listing
+export const addListingReview = async (req, res) => {
+  const { listingId, rating, comment } = req.body;
+  const userId = req.userId;
+
+  try {
+    // Validate input
+    if (!listingId || !rating || !comment) {
+      return res.status(400).json({
+        message: 'Listing ID, rating, and comment are required',
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        message: 'Rating must be between 1 and 5',
+      });
+    }
+
+    // Check if listing exists
+    const listing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: { id: true, name: true, userId: true },
+    });
+
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    // Prevent users from reviewing their own listings
+    if (listing.userId === userId) {
+      return res.status(400).json({
+        message: 'You cannot review your own listing',
+      });
+    }
+
+    // Check if user already reviewed this listing
+    const existingReview = await prisma.listingReview.findUnique({
+      where: {
+        listingId_authorId: {
+          listingId,
+          authorId: userId,
+        },
+      },
+    });
+
+    if (existingReview) {
+      return res.status(400).json({
+        message: 'You have already reviewed this listing',
+      });
+    }
+
+    // Create the review
+    const review = await prisma.listingReview.create({
+      data: {
+        listingId,
+        authorId: userId,
+        rating,
+        comment,
+        isApproved: false, // Reviews need approval
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            profilePhoto: true,
+          },
+        },
+        listing: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    // Create notification for listing owner
+    try {
+      await createNotification(
+        listing.userId,
+        'New Review Submitted',
+        `A new review has been submitted for your listing "${listing.name}"`,
+        'REVIEW_SUBMITTED',
+        'listing',
+        listing.id
+      );
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+    }
+
+    res.status(201).json({
+      message: 'Review submitted successfully and is pending approval',
+      review,
+    });
+  } catch (error) {
+    console.error('Add review error:', error);
+    res.status(500).json({ message: 'Failed to submit review' });
+  }
+};
+
+// Get all reviews for admin/staff management
+export const getAllReviews = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      status, // 'approved', 'pending', 'all'
+      search,
+      sortBy = 'createdAt',
+      order = 'desc',
+    } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Build where clause
+    const where = {
+      ...(status === 'approved' && { isApproved: true }),
+      ...(status === 'pending' && { isApproved: false }),
+      ...(search && {
+        OR: [
+          { comment: { contains: search, mode: 'insensitive' } },
+          {
+            listing: {
+              name: { contains: search, mode: 'insensitive' },
+            },
+          },
+          {
+            author: {
+              OR: [
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { username: { contains: search, mode: 'insensitive' } },
+              ],
+            },
+          },
+        ],
+      }),
+    };
+
+    const [reviews, total] = await Promise.all([
+      prisma.listingReview.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              profilePhoto: true,
+              verified: true,
+            },
+          },
+          listing: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { [sortBy]: order },
+        skip,
+        take: parseInt(limit),
+      }),
+      prisma.listingReview.count({ where }),
+    ]);
+
+    res.status(200).json({
+      reviews,
+      pagination: {
+        current: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        total,
+        hasNext: skip + parseInt(limit) < total,
+        hasPrev: parseInt(page) > 1,
+      },
+    });
+  } catch (error) {
+    console.error('Get reviews error:', error);
+    res.status(500).json({ message: 'Failed to fetch reviews' });
+  }
+};
+
+// Approve a review
+export const approveReview = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const review = await prisma.listingReview.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: { id: true, username: true, firstName: true },
+        },
+        listing: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    const updatedReview = await prisma.listingReview.update({
+      where: { id },
+      data: { isApproved: true },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            profilePhoto: true,
+          },
+        },
+        listing: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    // Notify the review author
+    try {
+      await createNotification(
+        review.author.id,
+        'Review Approved',
+        `Your review for "${review.listing.name}" has been approved`,
+        'REVIEW_APPROVED',
+        'listing',
+        review.listing.id
+      );
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+    }
+
+    res.status(200).json({
+      message: 'Review approved successfully',
+      review: updatedReview,
+    });
+  } catch (error) {
+    console.error('Approve review error:', error);
+    res.status(500).json({ message: 'Failed to approve review' });
+  }
+};
+
+// Reject/Delete a review
+export const deleteReview = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+
+  try {
+    const review = await prisma.listingReview.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: { id: true, username: true, firstName: true },
+        },
+        listing: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    await prisma.listingReview.delete({
+      where: { id },
+    });
+
+    // Notify the review author if reason provided
+    if (reason) {
+      try {
+        await createNotification(
+          review.author.id,
+          'Review Rejected',
+          `Your review for "${review.listing.name}" was rejected. Reason: ${reason}`,
+          'REVIEW_REJECTED',
+          'listing',
+          review.listing.id
+        );
+      } catch (notificationError) {
+        console.error('Failed to create notification:', notificationError);
+      }
+    }
+
+    res.status(200).json({
+      message: 'Review deleted successfully',
+      deletedReview: {
+        id: review.id,
+        author: review.author.firstName || review.author.username,
+        listing: review.listing.name,
+      },
+    });
+  } catch (error) {
+    console.error('Delete review error:', error);
+    res.status(500).json({ message: 'Failed to delete review' });
+  }
+};
+
+// Get reviews for a specific listing (public)
+export const getListingReviews = async (req, res) => {
+  const { listingId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  try {
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [reviews, total, averageRating] = await Promise.all([
+      prisma.listingReview.findMany({
+        where: {
+          listingId,
+          isApproved: true, // Only show approved reviews
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              profilePhoto: true,
+              verified: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: parseInt(limit),
+      }),
+      prisma.listingReview.count({
+        where: {
+          listingId,
+          isApproved: true,
+        },
+      }),
+      prisma.listingReview.aggregate({
+        where: {
+          listingId,
+          isApproved: true,
+        },
+        _avg: {
+          rating: true,
+        },
+      }),
+    ]);
+
+    // Calculate rating distribution
+    const ratingDistribution = await prisma.listingReview.groupBy({
+      by: ['rating'],
+      where: {
+        listingId,
+        isApproved: true,
+      },
+      _count: {
+        rating: true,
+      },
+    });
+
+    const ratingCounts = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+    };
+
+    ratingDistribution.forEach((item) => {
+      ratingCounts[item.rating] = item._count.rating;
+    });
+
+    res.status(200).json({
+      reviews,
+      averageRating: averageRating._avg.rating || 0,
+      totalReviews: total,
+      ratingDistribution: ratingCounts,
+      pagination: {
+        current: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit)),
+        total,
+        hasNext: skip + parseInt(limit) < total,
+        hasPrev: parseInt(page) > 1,
+      },
+    });
+  } catch (error) {
+    console.error('Get listing reviews error:', error);
+    res.status(500).json({ message: 'Failed to fetch reviews' });
+  }
+};
+
+// Get review statistics
+export const getReviewStats = async (req, res) => {
+  try {
+    const [
+      totalReviews,
+      approvedReviews,
+      pendingReviews,
+      averageRating,
+      recentReviews,
+    ] = await Promise.all([
+      prisma.listingReview.count(),
+      prisma.listingReview.count({ where: { isApproved: true } }),
+      prisma.listingReview.count({ where: { isApproved: false } }),
+      prisma.listingReview.aggregate({
+        where: { isApproved: true },
+        _avg: { rating: true },
+      }),
+      prisma.listingReview.findMany({
+        where: { isApproved: false },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              username: true,
+              firstName: true,
+            },
+          },
+          listing: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    res.status(200).json({
+      totalReviews,
+      approvedReviews,
+      pendingReviews,
+      averageRating: averageRating._avg.rating || 0,
+      recentReviews,
+    });
+  } catch (error) {
+    console.error('Get review stats error:', error);
+    res.status(500).json({ message: 'Failed to fetch review statistics' });
   }
 };

@@ -14,7 +14,11 @@ import {
   approveListing,
   rejectListing,
   addListingReview,
+  getAllReviews,
   approveReview,
+  deleteReview,
+  getListingReviews,
+  getReviewStats,
   getListingStats,
   getFeaturedListings,
   toggleFeatured,
@@ -42,17 +46,35 @@ router.put(
   rejectListing
 );
 router.put(
-  '/admin/reviews/:id/approve',
-  verifyToken,
-  requireStaffOrAdmin,
-  approveReview
-);
-router.put(
   '/admin/:id/featured',
   verifyToken,
   requireStaffOrAdmin,
   toggleFeatured
 );
+
+// Review management routes (Admin/Staff)
+router.get('/admin/reviews', verifyToken, requireStaffOrAdmin, getAllReviews);
+router.get(
+  '/admin/reviews/stats',
+  verifyToken,
+  requireStaffOrAdmin,
+  getReviewStats
+);
+router.put(
+  '/admin/reviews/:id/approve',
+  verifyToken,
+  requireStaffOrAdmin,
+  approveReview
+);
+router.delete(
+  '/admin/reviews/:id',
+  verifyToken,
+  requireStaffOrAdmin,
+  deleteReview
+);
+
+// Public review routes
+router.get('/:listingId/reviews', getListingReviews);
 
 // Public routes
 router.get('/', getListings);
