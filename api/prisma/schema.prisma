@@ -175,6 +175,7 @@ model Listing {
   description         String
   thumbnail           String?
   images              String[]
+  isFeatured          Boolean         @default(false)
   createdAt           DateTime        @default(now())
   updatedAt           DateTime?
   purpose             ListingCategory

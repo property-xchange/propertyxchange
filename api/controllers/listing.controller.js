@@ -112,15 +112,31 @@ export const getListings = async (req, res) => {
     res.status(500).json({ message: 'Failed to get Listings' });
   }
 };
+
 export const getListing = async (req, res) => {
   const { id } = req.params;
-  const isSlug = !id.match(
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-  );
+
+  // Enhanced ID/Slug detection - check if it's a MongoDB ObjectId
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+  const isUUID =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(
+      id
+    );
+
+  // If it's not an ObjectId or UUID, treat it as a slug
+  const searchBySlug = !isObjectId && !isUUID;
+
+  console.log('getListing called with:', {
+    id,
+    isObjectId,
+    isUUID,
+    searchBySlug,
+    searchField: searchBySlug ? 'slug' : 'id',
+  });
 
   try {
     const listing = await prisma.listing.findUnique({
-      where: isSlug ? { slug: id } : { id },
+      where: searchBySlug ? { slug: id } : { id },
       include: {
         user: {
           select: {
@@ -158,8 +174,19 @@ export const getListing = async (req, res) => {
     });
 
     if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
+      console.log('Listing not found for:', { id, searchBySlug });
+      return res.status(404).json({
+        message: 'Listing not found',
+        searchedBy: searchBySlug ? 'slug' : 'id',
+        searchValue: id,
+      });
     }
+
+    console.log('Listing found:', {
+      listingId: listing.id,
+      listingSlug: listing.slug,
+      listingName: listing.name,
+    });
 
     // Get related listings (same agent and similar category)
     const relatedListings = await prisma.listing.findMany({
@@ -223,8 +250,14 @@ export const getListing = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to get Listing' });
+    console.error('getListing error:', err);
+    res.status(500).json({
+      message: 'Failed to get Listing',
+      error:
+        process.env.NODE_ENV === 'development'
+          ? err.message
+          : 'Internal server error',
+    });
   }
 };
 
@@ -573,27 +606,190 @@ export const updateListing = async (req, res) => {
       return res.status(403).json({ message: 'Not Authorized!' });
     }
 
-    // Update slug if name changed
+    // Apply the same enum mapping logic as in addListing
+    const purposeMap = {
+      sale: 'SALE',
+      rent: 'RENT',
+      'short-let': 'SHORT_LET',
+      'joint-venture': 'JOINT_VENTURE',
+    };
+
+    const typeMap = {
+      'co-working space': 'CO_WORKING_SPACE',
+      'commercial property': 'COMMERCIAL_PROPERTY',
+      'flat/apartment': 'FLAT_APARTMENT',
+      house: 'HOUSE',
+      land: 'LAND',
+    };
+
+    const subTypeMap = {
+      // Co-working Space
+      'conference room': 'CONFERENCE_ROOM',
+      desk: 'DESK',
+      'meeting room': 'MEETING_ROOM',
+      'private office': 'PRIVATE_OFFICE',
+      workstation: 'WORKSTATION',
+
+      // Commercial Property
+      church: 'CHURCH',
+      'event center': 'EVENT_CENTER',
+      factory: 'FACTORY',
+      'filling station': 'FILLING_STATION',
+      'hotel guest house': 'HOTEL_GUEST_HOUSE',
+      'office space': 'OFFICE_SPACE',
+      school: 'SCHOOL',
+      shop: 'SHOP',
+      'shop in mall': 'SHOP_IN_MALL',
+      'show room': 'SHOW_ROOM',
+      'tank farm': 'TANK_FARM',
+      warehouse: 'WAREHOUSE',
+
+      // Flat/Apartment
+      'boys quarter': 'BOYS_QUARTER',
+      'mini flat': 'MINI_FLAT',
+      'mini-flat': 'MINI_FLAT',
+      penthouse: 'PENTHOUSE',
+      'self contain': 'SELF_CONTAIN',
+      'shared apartment': 'SHARED_APARTMENT',
+      'studio apartment': 'STUDIO_APARTMENT',
+
+      // House
+      'block of flats': 'BLOCK_OF_FLATS',
+      'detached bungalow': 'DETACHED_BUNGALOW',
+      'detached duplex': 'DETACHED_DUPLEX',
+      massionette: 'MASSIONETTE',
+      'semi detached bungalow': 'SEMI_DETACHED_BUNGALOW',
+      'semi detached duplex': 'SEMI_DETACHED_DUPLEX',
+      'terraced bungalow': 'TERRACED_BUNGALOW',
+      'terraced duplex': 'TERRACED_DUPLEX',
+
+      // Land
+      'commercial land': 'COMMERCIAL_LAND',
+      'industrial land': 'INDUSTRIAL_LAND',
+      'joint venture land': 'JOINT_VENTURE_LAND',
+      'mixed use land': 'MIXED_USE_LAND',
+      'residential land': 'RESIDENTIAL_LAND',
+      'serviced residential land': 'SERVICED_RESIDENTIAL_LAND',
+    };
+
+    // Process the update data with enum mapping
+    const updateData = { ...body };
+
+    // Map purpose if provided
+    if (body.purpose) {
+      const lowerPurpose = body.purpose.toLowerCase();
+      updateData.purpose =
+        purposeMap[lowerPurpose] || body.purpose.toUpperCase();
+    }
+
+    // Map type if provided
+    if (body.type) {
+      const lowerType = body.type.toLowerCase();
+      updateData.type =
+        typeMap[lowerType] || body.type.toUpperCase().replace(/[^A-Z]/g, '_');
+    }
+
+    // Map subType if provided
+    if (body.subType) {
+      const lowerSubType = body.subType.toLowerCase();
+      updateData.subType =
+        subTypeMap[lowerSubType] ||
+        body.subType.toUpperCase().replace(/[^A-Z]/g, '_');
+    }
+
+    // Parse numeric fields
+    if (body.price) updateData.price = parseFloat(body.price);
+    if (body.number_of_beds)
+      updateData.number_of_beds = parseInt(body.number_of_beds);
+    if (body.number_of_bathrooms)
+      updateData.number_of_bathrooms = parseInt(body.number_of_bathrooms);
+    if (body.toilets) updateData.toilets = parseInt(body.toilets);
+    if (body.discountPercent)
+      updateData.discountPercent = parseFloat(body.discountPercent);
+    if (body.discountPrice)
+      updateData.discountPrice = parseFloat(body.discountPrice);
+    if (body.initialPayment)
+      updateData.initialPayment = parseFloat(body.initialPayment);
+    if (body.monthlyPayment)
+      updateData.monthlyPayment = parseFloat(body.monthlyPayment);
+    if (body.duration) updateData.duration = parseInt(body.duration);
+
+    // Parse boolean fields
+    if (body.installment !== undefined)
+      updateData.installment = Boolean(body.installment);
+    if (body.furnished !== undefined)
+      updateData.furnished = Boolean(body.furnished);
+    if (body.serviced !== undefined)
+      updateData.serviced = Boolean(body.serviced);
+    if (body.newlyBuilt !== undefined)
+      updateData.newlyBuilt = Boolean(body.newlyBuilt);
+    if (body.parking !== undefined) updateData.parking = Boolean(body.parking);
+    if (body.offer !== undefined) updateData.offer = Boolean(body.offer);
+
+    // Handle date fields
+    if (body.discountEndDate) {
+      updateData.discountEndDate = new Date(body.discountEndDate);
+    }
+
+    // Update slug if name, type, or lga changed
     if (body.name && body.name !== listing.name) {
-      body.slug = generateSlug(
+      updateData.slug = generateSlug(
         body.name,
-        body.type || listing.type,
+        updateData.type || listing.type,
         body.lga || listing.lga
       );
     }
 
+    // Set updatedAt
+    updateData.updatedAt = new Date();
+
+    console.log('Update data being processed:', {
+      originalPurpose: body.purpose,
+      mappedPurpose: updateData.purpose,
+      originalType: body.type,
+      mappedType: updateData.type,
+      originalSubType: body.subType,
+      mappedSubType: updateData.subType,
+    });
+
     const updatedListing = await prisma.listing.update({
       where: { id },
-      data: {
-        ...body,
-        updatedAt: new Date(),
-      },
+      data: updateData,
     });
 
     res.status(200).json(updatedListing);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to update Listing' });
+    console.error('Update listing error:', err);
+    console.error('Error details:', {
+      code: err.code,
+      message: err.message,
+      stack: err.stack,
+    });
+
+    // Handle specific Prisma errors
+    if (err.code === 'P2002') {
+      return res
+        .status(400)
+        .json({ message: 'A listing with this slug already exists' });
+    }
+
+    if (err.code === 'P2003') {
+      return res
+        .status(400)
+        .json({ message: 'Invalid reference data provided' });
+    }
+
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    res.status(500).json({
+      message: 'Failed to update listing',
+      error:
+        process.env.NODE_ENV === 'development'
+          ? err.message
+          : 'Internal server error',
+    });
   }
 };
 
@@ -605,25 +801,75 @@ export const deleteListing = async (req, res) => {
   try {
     const listing = await prisma.listing.findUnique({
       where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found' });
     }
 
-    // Check permissions
+    // Check permissions:
+    // - Users can only delete their own listings
+    // - Admins can delete any listing
+    // - Staff can delete any listing (if you want to allow this)
     if (userRole === 'USER' && listing.userId !== tokenUserId) {
-      return res.status(403).json({ message: 'Not Authorized!' });
+      return res.status(403).json({
+        message: 'Not Authorized! You can only delete your own listings.',
+      });
     }
 
+    // Delete the listing (this will cascade delete related records due to Prisma schema)
     await prisma.listing.delete({
       where: { id },
     });
 
-    res.status(200).json({ message: 'Listing deleted' });
+    // Create notification for listing owner if deleted by admin/staff
+    if (userRole !== 'USER' && listing.userId !== tokenUserId) {
+      await createNotification(
+        listing.userId,
+        'Listing Deleted',
+        `Your property listing "${listing.name}" has been deleted by an administrator`,
+        'GENERAL',
+        'listing',
+        listing.id
+      );
+    }
+
+    res.status(200).json({
+      message: 'Listing deleted successfully',
+      deletedListing: {
+        id: listing.id,
+        name: listing.name,
+        owner: listing.user.firstName || listing.user.username,
+      },
+    });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to delete Listing' });
+    console.error('Delete listing error:', err);
+
+    // Handle specific Prisma errors
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    if (err.code === 'P2003') {
+      return res.status(400).json({
+        message: 'Cannot delete listing due to existing dependencies',
+      });
+    }
+
+    res.status(500).json({
+      message: 'Failed to delete listing',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
   }
 };
 
@@ -894,5 +1140,64 @@ export const getListingStats = async (req, res) => {
   } catch (error) {
     console.error('Get listing stats error:', error);
     res.status(500).json({ message: 'Failed to fetch listing statistics!' });
+  }
+};
+
+// Get featured listings
+export const getFeaturedListings = async (req, res) => {
+  try {
+    const featuredListings = await prisma.listing.findMany({
+      where: {
+        status: 'APPROVED',
+        isFeatured: true,
+      },
+      include: {
+        user: {
+          select: {
+            username: true,
+            firstName: true,
+            lastName: true,
+            profilePhoto: true,
+            companyName: true,
+            companyPhoto: true,
+            verified: true,
+            accountType: true,
+          },
+        },
+        _count: {
+          select: {
+            reviews: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10, // Limit to 10 featured properties
+    });
+
+    res.status(200).json(featuredListings);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: 'Failed to get featured listings' });
+  }
+};
+
+// Toggle featured status (Admin/Staff only)
+export const toggleFeatured = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isFeatured } = req.body;
+
+    const listing = await prisma.listing.update({
+      where: { id },
+      data: { isFeatured },
+    });
+
+    res.status(200).json({
+      message: `Listing ${isFeatured ? 'featured' : 'unfeatured'} successfully`,
+      listing,
+    });
+  } catch (error) {
+    console.error('Toggle featured error:', error);
+    res.status(500).json({ message: 'Failed to update featured status' });
   }
 };
