@@ -4,18 +4,7 @@ import { FiFilter, FiGrid } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
 import { openFilterMenu } from '../../../../redux/features/uiSlice';
 
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * HeadeFilters
- * @param {string} layout - The layout to show the properties in, either 'grid' or 'list'
- * @param {function} setLayout - Function to change the layout
- * @param {number} currentPage - The current page number
- * @param {number} itemsPerPage - The number of items shown per page
- * @param {number} totalItems - The total number of items
- *
- * @returns A JSX element with the filters and pagination
- */
-/*******  f596cd6a-aee5-48db-ac3d-588056012e94  *******/ const HeadeFilters = ({
+const HeadeFilters = ({
   layout,
   setLayout,
   currentPage,
