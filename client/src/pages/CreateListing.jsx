@@ -1,35 +1,35 @@
-import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import {
   useNavigate,
   useLoaderData,
   useParams,
   useLocation,
-} from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, MapPin } from 'lucide-react';
-import Dashboard from '../components/dashboard/Dashboard.jsx';
-import toast from 'react-hot-toast';
-import apiRequest from '../helper/apiRequest.js';
+} from "react-router-dom";
+import { ChevronLeft, ChevronRight, Check, MapPin } from "lucide-react";
+import Dashboard from "../components/dashboard/Dashboard.jsx";
+import toast from "react-hot-toast";
+import apiRequest from "../helper/apiRequest.js";
 
 // Import separate step components
-import BasicInfoStep from '../components/dashboard/steps/create-listings/BasicInfoStep.jsx';
-import FeaturesStep from '../components/dashboard/steps/create-listings/FeaturesStep.jsx';
-import LocationStep from '../components/dashboard/steps/create-listings/LocationStep.jsx';
-import PricingStep from '../components/dashboard/steps/create-listings/PricingStep.jsx';
-import MediaStep from '../components/dashboard/steps/create-listings/MediaStep.jsx';
-import ReviewStep from '../components/dashboard/steps/create-listings/ReviewStep.jsx';
+import BasicInfoStep from "../components/dashboard/steps/create-listings/BasicInfoStep.jsx";
+import FeaturesStep from "../components/dashboard/steps/create-listings/FeaturesStep.jsx";
+import LocationStep from "../components/dashboard/steps/create-listings/LocationStep.jsx";
+import PricingStep from "../components/dashboard/steps/create-listings/PricingStep.jsx";
+import MediaStep from "../components/dashboard/steps/create-listings/MediaStep.jsx";
+import ReviewStep from "../components/dashboard/steps/create-listings/ReviewStep.jsx";
 
 // Import data and helpers
 import {
   locationData,
   listingType,
   listingFeatures,
-} from '../data/dummyData.js';
+} from "../data/dummyData.js";
 import {
   validateYouTubeLink,
   validateInstagramLink,
-} from '../helper/validate.js';
-import { getCurrentLocation } from '../helper/locationHelper.js';
+} from "../helper/validate.js";
+import { getCurrentLocation } from "../helper/locationHelper.js";
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -38,15 +38,13 @@ export default function CreateListing() {
   const location = useLocation();
 
   // Determine if this is edit mode
-  const isEdit = location.pathname.includes('/edit-listing/');
+  const isEdit = location.pathname.includes("/edit-listing/");
 
-  // Get existing listing data if editing
-  let existingListing = null;
-  try {
-    existingListing = isEdit ? useLoaderData() : null;
-  } catch (error) {
-    console.log('No loader data available');
-  }
+  // ALWAYS call useLoaderData unconditionally at the top level
+  const loaderData = useLoaderData();
+
+  // Then conditionally use the data
+  const existingListing = isEdit ? loaderData : null;
 
   // Step management
   const [currentStep, setCurrentStep] = useState(1);
@@ -54,8 +52,8 @@ export default function CreateListing() {
 
   // State variables for form validation and UI
   const [showMoreFeatures, setShowMoreFeatures] = useState(false);
-  const [instagramLinkErr, setInstagramLinkErr] = useState('');
-  const [youTubeLinkErr, setYouTubeLinkErr] = useState('');
+  const [instagramLinkErr, setInstagramLinkErr] = useState("");
+  const [youTubeLinkErr, setYouTubeLinkErr] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
@@ -63,119 +61,122 @@ export default function CreateListing() {
   const [formData, setFormData] = useState(() => {
     if (isEdit && existingListing) {
       return {
-        name: existingListing.name || '',
-        street: existingListing.street || '',
-        latitude: existingListing.latitude || '',
-        longitude: existingListing.longitude || '',
-        price: existingListing.price?.toString() || '',
-        number_of_beds: existingListing.number_of_beds?.toString() || '',
+        name: existingListing.name || "",
+        street: existingListing.street || "",
+        latitude: existingListing.latitude || "",
+        longitude: existingListing.longitude || "",
+        price: existingListing.price?.toString() || "",
+        number_of_beds: existingListing.number_of_beds?.toString() || "",
         number_of_bathrooms:
-          existingListing.number_of_bathrooms?.toString() || '',
-        toilets: existingListing.toilets?.toString() || '',
-        appendTo: existingListing.appendTo || '',
-        initialPayment: existingListing.initialPayment?.toString() || '',
-        monthlyPayment: existingListing.monthlyPayment?.toString() || '',
-        duration: existingListing.duration?.toString() || '',
-        installmentAppendTo: existingListing.installmentAppendTo || '',
+          existingListing.number_of_bathrooms?.toString() || "",
+        toilets: existingListing.toilets?.toString() || "",
+        appendTo: existingListing.appendTo || "",
+        initialPayment: existingListing.initialPayment?.toString() || "",
+        monthlyPayment: existingListing.monthlyPayment?.toString() || "",
+        duration: existingListing.duration?.toString() || "",
+        installmentAppendTo: existingListing.installmentAppendTo || "",
         discountEndDate: existingListing.discountEndDate
           ? new Date(existingListing.discountEndDate)
               .toISOString()
-              .split('T')[0]
-          : '',
-        youtubeLink: existingListing.youtubeLink || '',
-        instagramLink: existingListing.instagramLink || '',
+              .split("T")[0]
+          : "",
+        youtubeLink: existingListing.youtubeLink || "",
+        instagramLink: existingListing.instagramLink || "",
       };
     }
     return {
-      name: '',
-      street: '',
-      latitude: '',
-      longitude: '',
-      price: '',
-      number_of_beds: '',
-      number_of_bathrooms: '',
-      toilets: '',
-      appendTo: '',
-      initialPayment: '',
-      monthlyPayment: '',
-      duration: '',
-      installmentAppendTo: '',
-      discountEndDate: '',
-      youtubeLink: '',
-      instagramLink: '',
+      name: "",
+      street: "",
+      latitude: "",
+      longitude: "",
+      price: "",
+      number_of_beds: "",
+      number_of_bathrooms: "",
+      toilets: "",
+      appendTo: "",
+      initialPayment: "",
+      monthlyPayment: "",
+      duration: "",
+      installmentAppendTo: "",
+      discountEndDate: "",
+      youtubeLink: "",
+      instagramLink: "",
     };
   });
 
+  // Rest of your code remains the same...
   // Initialize other state with existing data if editing
   const [images, setImages] = useState(
-    isEdit && existingListing?.images ? existingListing.images : []
+    isEdit && existingListing?.images ? existingListing.images : [],
   );
   const [purpose, setPurpose] = useState(
     isEdit && existingListing?.purpose
       ? existingListing.purpose.toLowerCase()
-      : ''
+      : "",
   );
   const [selectedType, setSelectedType] = useState(
-    isEdit && existingListing?.type ? existingListing.type : ''
+    isEdit && existingListing?.type ? existingListing.type : "",
   );
   const [selectedSubType, setSelectedSubType] = useState(
-    isEdit && existingListing?.subType ? existingListing.subType : ''
+    isEdit && existingListing?.subType ? existingListing.subType : "",
   );
   const [description, setDescription] = useState(
-    isEdit && existingListing?.description ? existingListing.description : ''
+    isEdit && existingListing?.description ? existingListing.description : "",
   );
   const [selectedFeatures, setSelectedFeatures] = useState(
-    isEdit && existingListing?.features ? existingListing.features : []
+    isEdit && existingListing?.features ? existingListing.features : [],
   );
   const [selectedState, setSelectedState] = useState(
-    isEdit && existingListing?.state ? existingListing.state : ''
+    isEdit && existingListing?.state ? existingListing.state : "",
   );
   const [selectedLGA, setSelectedLGA] = useState(
-    isEdit && existingListing?.lga ? existingListing.lga : ''
+    isEdit && existingListing?.lga ? existingListing.lga : "",
   );
   const [showDiscount, setShowDiscount] = useState(
-    isEdit && existingListing?.offer ? existingListing.offer : false
+    isEdit && existingListing?.offer ? existingListing.offer : false,
   );
   const [showInstallment, setShowInstallment] = useState(
-    isEdit && existingListing?.installment ? existingListing.installment : false
+    isEdit && existingListing?.installment
+      ? existingListing.installment
+      : false,
   );
   const [regularPrice, setRegularPrice] = useState(
-    isEdit && existingListing?.price ? existingListing.price.toString() : ''
+    isEdit && existingListing?.price ? existingListing.price.toString() : "",
   );
   const [discountPrice, setDiscountPrice] = useState(
     isEdit && existingListing?.discountPrice
       ? existingListing.discountPrice.toString()
-      : ''
+      : "",
   );
   const [discountPercentage, setDiscountPercentage] = useState(
     isEdit && existingListing?.discountPercent
       ? existingListing.discountPercent.toString()
-      : ''
+      : "",
   );
   const [isServiced, setIsServiced] = useState(
-    isEdit && existingListing?.serviced ? existingListing.serviced : false
+    isEdit && existingListing?.serviced ? existingListing.serviced : false,
   );
   const [isFurnished, setIsFurnished] = useState(
-    isEdit && existingListing?.furnished ? existingListing.furnished : false
+    isEdit && existingListing?.furnished ? existingListing.furnished : false,
   );
   const [hasParking, setHasParking] = useState(
-    isEdit && existingListing?.parking ? existingListing.parking : false
+    isEdit && existingListing?.parking ? existingListing.parking : false,
   );
   const [isNewlyBuilt, setIsNewlyBuilt] = useState(
-    isEdit && existingListing?.newlyBuilt ? existingListing.newlyBuilt : false
+    isEdit && existingListing?.newlyBuilt ? existingListing.newlyBuilt : false,
   );
 
   const steps = [
     {
       id: 1,
-      title: 'Basic Info',
-      description: 'Property name, type & purpose',
+      title: "Basic Info",
+      description: "Property name, type & purpose",
     },
-    { id: 2, title: 'Features', description: 'Beds, baths & amenities' },
-    { id: 3, title: 'Location', description: 'Address & coordinates' },
-    { id: 4, title: 'Pricing', description: 'Price & payment options' },
-    { id: 5, title: 'Media', description: 'Images & social links' },
-    { id: 6, title: 'Review', description: 'Final review & submit' },
+    { id: 2, title: "Features", description: "Beds, baths & amenities" },
+    { id: 3, title: "Location", description: "Address & coordinates" },
+    { id: 4, title: "Pricing", description: "Price & payment options" },
+    { id: 5, title: "Media", description: "Images & social links" },
+    { id: 6, title: "Review", description: "Final review & submit" },
   ];
 
   // Handler functions
@@ -196,9 +197,9 @@ export default function CreateListing() {
         latitude: location.latitude.toString(),
         longitude: location.longitude.toString(),
       }));
-      toast.success('Location retrieved successfully!');
+      toast.success("Location retrieved successfully!");
     } catch (error) {
-      toast.error(error.message || 'Failed to get location');
+      toast.error(error.message || "Failed to get location");
     } finally {
       setIsGettingLocation(false);
     }
@@ -214,7 +215,7 @@ export default function CreateListing() {
   const handleTypeChange = (e) => {
     const type = e.target.value;
     setSelectedType(type);
-    setSelectedSubType('');
+    setSelectedSubType("");
   };
 
   const handleSubTypeChange = (e) => {
@@ -224,16 +225,16 @@ export default function CreateListing() {
 
   const handleBooleanChange = (booleans) => {
     switch (booleans) {
-      case 'serviced':
+      case "serviced":
         setIsServiced(!isServiced);
         break;
-      case 'furnished':
+      case "furnished":
         setIsFurnished(!isFurnished);
         break;
-      case 'parking':
+      case "parking":
         setHasParking(!hasParking);
         break;
-      case 'newlyBuilt':
+      case "newlyBuilt":
         setIsNewlyBuilt(!isNewlyBuilt);
         break;
       default:
@@ -258,7 +259,7 @@ export default function CreateListing() {
   const handleStateChange = (e) => {
     const newState = e.target.value;
     setSelectedState(newState);
-    setSelectedLGA('');
+    setSelectedLGA("");
   };
 
   const handleLGAChange = (e) => {
@@ -287,8 +288,8 @@ export default function CreateListing() {
   const getCurrentDate = () => {
     const today = new Date();
     const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   };
 
@@ -297,9 +298,9 @@ export default function CreateListing() {
     handleInputChange(e);
     const isValidInstagramLink = validateInstagramLink(input);
     if (input && !isValidInstagramLink) {
-      setInstagramLinkErr('Invalid Instagram URL');
+      setInstagramLinkErr("Invalid Instagram URL");
     } else {
-      setInstagramLinkErr('');
+      setInstagramLinkErr("");
     }
   };
 
@@ -308,9 +309,9 @@ export default function CreateListing() {
     handleInputChange(e);
     const isValidYouTubeLink = validateYouTubeLink(input);
     if (input && !isValidYouTubeLink) {
-      setYouTubeLinkErr('Invalid YouTube URL');
+      setYouTubeLinkErr("Invalid YouTube URL");
     } else {
-      setYouTubeLinkErr('');
+      setYouTubeLinkErr("");
     }
   };
 
@@ -371,7 +372,7 @@ export default function CreateListing() {
         discountPercent: parseFloat(discountPercentage) || null,
         discountPrice: parseFloat(discountPrice) || null,
         discountEndDate: formData.discountEndDate
-          ? new Date(formData.discountEndDate + 'T00:00:00Z').toISOString()
+          ? new Date(formData.discountEndDate + "T00:00:00Z").toISOString()
           : null,
         installment: showInstallment,
         appendTo: formData.appendTo || null,
@@ -396,23 +397,23 @@ export default function CreateListing() {
         images: images,
       };
 
-      console.log('Payload being sent:', payload);
+      console.log("Payload being sent:", payload);
 
       let res;
       if (isEdit) {
         res = await apiRequest.put(`/listing/${params.id}`, payload);
-        toast.success('Listing updated successfully!');
+        toast.success("Listing updated successfully!");
       } else {
-        res = await apiRequest.post('/listing', payload);
-        toast.success('Listing created successfully!');
+        res = await apiRequest.post("/listing", payload);
+        toast.success("Listing created successfully!");
       }
 
-      navigate('/property/' + (res.data.slug || res.data.id));
+      navigate("/property/" + (res.data.slug || res.data.id));
     } catch (err) {
-      console.error(`Error ${isEdit ? 'updating' : 'creating'} listing:`, err);
+      console.error(`Error ${isEdit ? "updating" : "creating"} listing:`, err);
       toast.error(
         err.response?.data?.message ||
-          `Failed to ${isEdit ? 'update' : 'create'} listing`
+          `Failed to ${isEdit ? "update" : "create"} listing`,
       );
     } finally {
       setIsLoading(false);
@@ -492,12 +493,12 @@ export default function CreateListing() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {isEdit ? 'Edit Property Listing' : 'Create Property Listing'}
+            {isEdit ? "Edit Property Listing" : "Create Property Listing"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             {isEdit
-              ? 'Update your property information'
-              : 'Follow the steps below to list your property'}
+              ? "Update your property information"
+              : "Follow the steps below to list your property"}
           </p>
         </div>
 
@@ -510,10 +511,10 @@ export default function CreateListing() {
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
                       currentStep > step.id
-                        ? 'bg-green-500 border-green-500 text-white dark:bg-green-600 dark:border-green-600'
+                        ? "bg-green-500 border-green-500 text-white dark:bg-green-600 dark:border-green-600"
                         : currentStep === step.id
-                        ? 'bg-blue-500 border-blue-500 text-white dark:bg-blue-600 dark:border-blue-600'
-                        : 'bg-white border-gray-300 text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500'
+                          ? "bg-blue-500 border-blue-500 text-white dark:bg-blue-600 dark:border-blue-600"
+                          : "bg-white border-gray-300 text-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500"
                     }`}
                   >
                     {currentStep > step.id ? (
@@ -526,8 +527,8 @@ export default function CreateListing() {
                     <p
                       className={`text-sm font-medium ${
                         currentStep >= step.id
-                          ? 'text-gray-900 dark:text-white'
-                          : 'text-gray-400 dark:text-gray-500'
+                          ? "text-gray-900 dark:text-white"
+                          : "text-gray-400 dark:text-gray-500"
                       }`}
                     >
                       {step.title}
@@ -535,8 +536,8 @@ export default function CreateListing() {
                     <p
                       className={`text-xs ${
                         currentStep >= step.id
-                          ? 'text-gray-600 dark:text-gray-400'
-                          : 'text-gray-400 dark:text-gray-500'
+                          ? "text-gray-600 dark:text-gray-400"
+                          : "text-gray-400 dark:text-gray-500"
                       }`}
                     >
                       {step.description}
@@ -547,8 +548,8 @@ export default function CreateListing() {
                   <div
                     className={`flex-1 h-0.5 mx-4 ${
                       currentStep > step.id
-                        ? 'bg-green-500 dark:bg-green-600'
-                        : 'bg-gray-300 dark:bg-gray-600'
+                        ? "bg-green-500 dark:bg-green-600"
+                        : "bg-gray-300 dark:bg-gray-600"
                     }`}
                   />
                 )}
@@ -581,8 +582,8 @@ export default function CreateListing() {
               disabled={currentStep === 1}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
                 currentStep === 1
-                  ? 'text-gray-400 cursor-not-allowed dark:text-gray-500'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  ? "text-gray-400 cursor-not-allowed dark:text-gray-500"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
               }`}
             >
               <ChevronLeft size={20} />
@@ -597,8 +598,8 @@ export default function CreateListing() {
                   disabled={!validateStep(currentStep)}
                   className={`flex items-center space-x-2 px-6 py-2 rounded-lg ${
                     validateStep(currentStep)
-                      ? 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                      ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
                   }`}
                 >
                   <span>Next</span>
@@ -610,20 +611,20 @@ export default function CreateListing() {
                   disabled={isLoading || !validateStep(currentStep)}
                   className={`flex items-center space-x-2 px-6 py-2 rounded-lg ${
                     !isLoading && validateStep(currentStep)
-                      ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                      ? "bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
                   }`}
                 >
                   {isLoading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>{isEdit ? 'Updating...' : 'Publishing...'}</span>
+                      <span>{isEdit ? "Updating..." : "Publishing..."}</span>
                     </>
                   ) : (
                     <>
                       <Check size={20} />
                       <span>
-                        {isEdit ? 'Update Listing' : 'Publish Listing'}
+                        {isEdit ? "Update Listing" : "Publish Listing"}
                       </span>
                     </>
                   )}

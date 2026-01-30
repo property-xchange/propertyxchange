@@ -1,5 +1,5 @@
-import { BiMap } from 'react-icons/bi';
-import { FiMail, FiPhone } from 'react-icons/fi';
+import { BiMap } from "react-icons/bi";
+import { FiMail, FiPhone } from "react-icons/fi";
 
 const ContactInfo = () => {
   return (
@@ -9,16 +9,29 @@ const ContactInfo = () => {
           <FiPhone />
         </div>
         <h1 className="mt-2 text-lg font-semibold">Phone Number</h1>
-        <p>+234 478 832902</p>
-        <p>+234 775 358738</p>
+        <a className="decoration-inherit" href="tel:+2347037248610">
+          07037248610
+        </a>
       </div>
       <div className="text-center">
         <div className="icon-box !h-14 !w-14 !bg-primary text-white mx-auto text-2xl">
           <FiMail />
         </div>
         <h1 className="mt-2 text-lg font-semibold">Email Address</h1>
-        <p>contact@propertyXchange.com</p>
-        <p>info@propertyXchange.com</p>
+        <div className="flex flex-col">
+          <a
+            className="decoration-inherit"
+            href="mailto:contact@propertyXchange.com.ng"
+          >
+            contact@propertyXchange.com.ng
+          </a>
+          <a
+            className="decoration-inherit"
+            href="mailto:info@propertyXchange.com.ng"
+          >
+            info@propertyXchange.com.ng
+          </a>
+        </div>
       </div>
       <div className="text-center">
         <div className="icon-box !h-14 !w-14 !bg-primary text-white mx-auto text-2xl">

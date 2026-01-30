@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+// client/src/components/dashboard/BlogManagement.jsx
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
 import {
   FaEdit,
   FaTrash,
@@ -7,21 +8,21 @@ import {
   FaPlus,
   FaSearch,
   FaTimes,
-} from 'react-icons/fa';
-import { MdPublish, MdUnpublished } from 'react-icons/md';
-import { Upload, Image, Trash2 } from 'lucide-react';
-import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { AuthContext } from '../../context/AuthContext';
-import apiRequest from '../../helper/apiRequest';
-import toast from 'react-hot-toast';
-import Dashboard from './Dashboard';
-import UploadWidget from '../common/page-components/UploadWidget.jsx';
+} from "react-icons/fa";
+import { MdPublish, MdUnpublished } from "react-icons/md";
+import { Upload, Image, Trash2 } from "lucide-react";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import { AuthContext } from "../../context/AuthContext";
+import apiRequest from "../../helper/apiRequest";
+import toast from "react-hot-toast";
+import Dashboard from "./Dashboard";
+import UploadWidget from "../common/page-components/UploadWidget.jsx";
 import {
   extractPublicIdFromUrl,
   deleteFromCloudinary,
   isCloudinaryUrl,
   getOptimizedUrl,
-} from '../../helper/cloudinaryHelper';
+} from "../../helper/cloudinaryHelper";
 
 // Modal Component
 const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
@@ -29,17 +30,17 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
   const isEditMode = Boolean(blogId);
 
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    excerpt: '',
-    seoTitle: '',
-    seoDescription: '',
-    metaKeywords: '',
-    categoryId: '',
-    tags: '',
+    title: "",
+    content: "",
+    excerpt: "",
+    seoTitle: "",
+    seoDescription: "",
+    metaKeywords: "",
+    categoryId: "",
+    tags: "",
     isFeatured: false,
     isPublished: false,
-    featuredImage: '',
+    featuredImage: "",
     images: [],
   });
 
@@ -50,37 +51,37 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
 
   // Cloudinary configuration for blog images
   const uwConfig = {
-    cloudName: 'propertyxchange', // Replace with your cloudinary name
-    uploadPreset: 'blog_images', // Replace with your upload preset
+    cloudName: "propertyxchange", // Replace with your cloudinary name
+    uploadPreset: "blog_images", // Replace with your upload preset
     multiple: true,
     maxImageFileSize: 2000000,
     maxFiles: 10,
-    folder: 'blog',
-    sources: ['local', 'url'],
+    folder: "blog",
+    sources: ["local", "url"],
     showAdvancedOptions: false,
     cropping: true,
     croppingAspectRatio: 1.78, // 16:9 aspect ratio for blog images
     croppingValidateDimensions: true,
-    resourceType: 'image',
-    clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    resourceType: "image",
+    clientAllowedFormats: ["jpg", "jpeg", "png", "gif", "webp"],
     maxImageWidth: 1920,
     maxImageHeight: 1080,
-    theme: 'minimal',
+    theme: "minimal",
     styles: {
       palette: {
-        window: '#FFFFFF',
-        windowBorder: '#90A0B3',
-        tabIcon: '#0078FF',
-        menuIcons: '#5A616A',
-        textDark: '#000000',
-        textLight: '#FFFFFF',
-        link: '#0078FF',
-        action: '#FF620C',
-        inactiveTabIcon: '#0E2F5A',
-        error: '#F44235',
-        inProgress: '#0078FF',
-        complete: '#20B832',
-        sourceBg: '#E4EBF1',
+        window: "#FFFFFF",
+        windowBorder: "#90A0B3",
+        tabIcon: "#0078FF",
+        menuIcons: "#5A616A",
+        textDark: "#000000",
+        textLight: "#FFFFFF",
+        link: "#0078FF",
+        action: "#FF620C",
+        inactiveTabIcon: "#0E2F5A",
+        error: "#F44235",
+        inProgress: "#0078FF",
+        complete: "#20B832",
+        sourceBg: "#E4EBF1",
       },
     },
   };
@@ -98,17 +99,17 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      content: '',
-      excerpt: '',
-      seoTitle: '',
-      seoDescription: '',
-      metaKeywords: '',
-      categoryId: '',
-      tags: '',
+      title: "",
+      content: "",
+      excerpt: "",
+      seoTitle: "",
+      seoDescription: "",
+      metaKeywords: "",
+      categoryId: "",
+      tags: "",
       isFeatured: false,
       isPublished: false,
-      featuredImage: '',
+      featuredImage: "",
       images: [],
     });
     setDeletingImages(new Set());
@@ -116,11 +117,11 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await apiRequest.get('/blog/categories');
+      const response = await apiRequest.get("/blog/categories");
       setCategories(response.data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Failed to fetch categories');
+      console.error("Error fetching categories:", error);
+      toast.error("Failed to fetch categories");
     }
   };
 
@@ -131,14 +132,14 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
       const blog = response.data.blogs.find((b) => b.id === blogId);
 
       if (!blog) {
-        toast.error('Blog not found');
+        toast.error("Blog not found");
         onClose();
         return;
       }
 
       // Check if user can edit this blog
-      if (currentUser?.role !== 'ADMIN' && blog.authorId !== currentUser?.id) {
-        toast.error('You do not have permission to edit this blog');
+      if (currentUser?.role !== "ADMIN" && blog.authorId !== currentUser?.id) {
+        toast.error("You do not have permission to edit this blog");
         onClose();
         return;
       }
@@ -146,20 +147,20 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
       setFormData({
         title: blog.title,
         content: blog.content,
-        excerpt: blog.excerpt || '',
-        seoTitle: blog.seoTitle || '',
-        seoDescription: blog.seoDescription || '',
-        metaKeywords: blog.metaKeywords?.join(', ') || '',
+        excerpt: blog.excerpt || "",
+        seoTitle: blog.seoTitle || "",
+        seoDescription: blog.seoDescription || "",
+        metaKeywords: blog.metaKeywords?.join(", ") || "",
         categoryId: blog.categoryId,
-        tags: blog.tags?.join(', ') || '',
+        tags: blog.tags?.join(", ") || "",
         isFeatured: blog.isFeatured,
         isPublished: blog.isPublished,
-        featuredImage: blog.featuredImage || '',
+        featuredImage: blog.featuredImage || "",
         images: blog.images || [],
       });
     } catch (error) {
-      console.error('Error fetching blog:', error);
-      toast.error('Failed to fetch blog');
+      console.error("Error fetching blog:", error);
+      toast.error("Failed to fetch blog");
       onClose();
     } finally {
       setFetchingBlog(false);
@@ -170,7 +171,7 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -182,11 +183,11 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
       const blogData = {
         ...formData,
         metaKeywords: formData.metaKeywords
-          .split(',')
+          .split(",")
           .map((keyword) => keyword.trim())
           .filter((keyword) => keyword.length > 0),
         tags: formData.tags
-          .split(',')
+          .split(",")
           .map((tag) => tag.trim())
           .filter((tag) => tag.length > 0),
         images: formData.images, // Already an array
@@ -194,17 +195,17 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
 
       if (isEditMode) {
         await apiRequest.put(`/blog/${blogId}`, blogData);
-        toast.success('Blog updated successfully');
+        toast.success("Blog updated successfully");
       } else {
-        await apiRequest.post('/blog', blogData);
-        toast.success('Blog created successfully');
+        await apiRequest.post("/blog", blogData);
+        toast.success("Blog created successfully");
       }
 
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Error saving blog:', error);
-      toast.error(error.response?.data?.message || 'Failed to save blog');
+      console.error("Error saving blog:", error);
+      toast.error(error.response?.data?.message || "Failed to save blog");
     } finally {
       setLoading(false);
     }
@@ -245,12 +246,12 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
         if (publicId) {
           const deleted = await deleteFromCloudinary(
             publicId,
-            uwConfig.cloudName
+            uwConfig.cloudName,
           );
           if (!deleted) {
-            toast.error('Warning: Could not delete image from cloud storage');
+            toast.error("Warning: Could not delete image from cloud storage");
           } else {
-            toast.success('Image deleted successfully');
+            toast.success("Image deleted successfully");
           }
         }
       }
@@ -260,8 +261,8 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
         images: prev.images.filter((_, index) => index !== indexToRemove),
       }));
     } catch (error) {
-      console.error('Error deleting image:', error);
-      toast.error('Error deleting image');
+      console.error("Error deleting image:", error);
+      toast.error("Error deleting image");
       setFormData((prev) => ({
         ...prev,
         images: prev.images.filter((_, index) => index !== indexToRemove),
@@ -285,19 +286,19 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
           await deleteFromCloudinary(publicId, uwConfig.cloudName);
         }
       }
-      setFormData((prev) => ({ ...prev, featuredImage: '' }));
-      toast.success('Featured image removed');
+      setFormData((prev) => ({ ...prev, featuredImage: "" }));
+      toast.success("Featured image removed");
     } catch (error) {
-      console.error('Error removing featured image:', error);
-      setFormData((prev) => ({ ...prev, featuredImage: '' }));
-      toast.error('Featured image removed (may still exist in cloud)');
+      console.error("Error removing featured image:", error);
+      setFormData((prev) => ({ ...prev, featuredImage: "" }));
+      toast.error("Featured image removed (may still exist in cloud)");
     }
   };
 
   const generateExcerptFromContent = () => {
     if (formData.content && !formData.excerpt) {
       const excerpt = formData.content
-        .replace(/<[^>]*>/g, '')
+        .replace(/<[^>]*>/g, "")
         .substring(0, 200);
       setFormData((prev) => ({
         ...prev,
@@ -322,7 +323,7 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {isEditMode ? 'Edit Blog Post' : 'Create New Blog Post'}
+              {isEditMode ? "Edit Blog Post" : "Create New Blog Post"}
             </h2>
             <button
               onClick={onClose}
@@ -582,7 +583,7 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
                                       ...uwConfig,
                                       multiple: false,
                                       maxFiles: 1,
-                                      folder: 'blog/featured',
+                                      folder: "blog/featured",
                                     }}
                                     setPublicId={(publicId) => {
                                       const imageUrl = `https://res.cloudinary.com/${uwConfig.cloudName}/image/upload/v1/${publicId}`;
@@ -620,7 +621,7 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
                                 <UploadWidget
                                   uwConfig={{
                                     ...uwConfig,
-                                    folder: 'blog/gallery',
+                                    folder: "blog/gallery",
                                   }}
                                   setState={setImages}
                                 />
@@ -676,7 +677,7 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
                             placeholder="https://example.com/image.jpg"
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
                             onKeyPress={(e) => {
-                              if (e.key === 'Enter' && e.target.value.trim()) {
+                              if (e.key === "Enter" && e.target.value.trim()) {
                                 e.preventDefault();
                                 const url = e.target.value.trim();
                                 if (
@@ -687,7 +688,7 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
                                 } else {
                                   setImages([...formData.images, url]);
                                 }
-                                e.target.value = '';
+                                e.target.value = "";
                               }
                             }}
                           />
@@ -709,11 +710,11 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
                               <span
                                 className={`font-medium ${
                                   formData.featuredImage
-                                    ? 'text-green-600 dark:text-green-400'
-                                    : 'text-gray-500 dark:text-gray-400'
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-gray-500 dark:text-gray-400"
                                 }`}
                               >
-                                {formData.featuredImage ? 'Set' : 'Not set'}
+                                {formData.featuredImage ? "Set" : "Not set"}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -746,10 +747,10 @@ const BlogModal = ({ isOpen, onClose, blogId, onSuccess }) => {
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading
-                      ? 'Saving...'
+                      ? "Saving..."
                       : isEditMode
-                      ? 'Update Blog'
-                      : 'Create Blog'}
+                        ? "Update Blog"
+                        : "Create Blog"}
                   </button>
                 </div>
               </form>
@@ -767,9 +768,9 @@ const BlogManagement = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    search: '',
-    category: '',
-    published: '',
+    search: "",
+    category: "",
+    published: "",
     page: 1,
     limit: 10,
   });
@@ -799,8 +800,8 @@ const BlogManagement = () => {
       setBlogs(response.data.blogs);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Error fetching blogs:', error);
-      toast.error('Failed to fetch blogs');
+      console.error("Error fetching blogs:", error);
+      toast.error("Failed to fetch blogs");
     } finally {
       setLoading(false);
     }
@@ -808,25 +809,25 @@ const BlogManagement = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await apiRequest.get('/blog/categories');
+      const response = await apiRequest.get("/blog/categories");
       setCategories(response.data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
   };
 
   const handleDelete = async (blogId) => {
-    if (!window.confirm('Are you sure you want to delete this blog post?')) {
+    if (!window.confirm("Are you sure you want to delete this blog post?")) {
       return;
     }
 
     try {
       await apiRequest.delete(`/blog/${blogId}`);
-      toast.success('Blog post deleted successfully');
+      toast.success("Blog post deleted successfully");
       fetchBlogs();
     } catch (error) {
-      console.error('Error deleting blog:', error);
-      toast.error('Failed to delete blog post');
+      console.error("Error deleting blog:", error);
+      toast.error("Failed to delete blog post");
     }
   };
 
@@ -836,12 +837,12 @@ const BlogManagement = () => {
         isPublished: !currentStatus,
       });
       toast.success(
-        `Blog post ${!currentStatus ? 'published' : 'unpublished'} successfully`
+        `Blog post ${!currentStatus ? "published" : "unpublished"} successfully`,
       );
       fetchBlogs();
     } catch (error) {
-      console.error('Error updating blog status:', error);
-      toast.error('Failed to update blog status');
+      console.error("Error updating blog status:", error);
+      toast.error("Failed to update blog status");
     }
   };
 
@@ -854,15 +855,15 @@ const BlogManagement = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const canEdit = (blog) => {
-    return currentUser?.role === 'ADMIN' || blog.authorId === currentUser?.id;
+    return currentUser?.role === "ADMIN" || blog.authorId === currentUser?.id;
   };
 
   const handleCreateBlog = () => {
@@ -915,14 +916,14 @@ const BlogManagement = () => {
                 placeholder="Search blogs..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
               />
             </div>
 
             <select
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
+              onChange={(e) => handleFilterChange("category", e.target.value)}
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
@@ -935,7 +936,7 @@ const BlogManagement = () => {
             <select
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               value={filters.published}
-              onChange={(e) => handleFilterChange('published', e.target.value)}
+              onChange={(e) => handleFilterChange("published", e.target.value)}
             >
               <option value="">All Status</option>
               <option value="true">Published</option>
@@ -945,7 +946,7 @@ const BlogManagement = () => {
             <select
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               value={filters.limit}
-              onChange={(e) => handleFilterChange('limit', e.target.value)}
+              onChange={(e) => handleFilterChange("limit", e.target.value)}
             >
               <option value="10">10 per page</option>
               <option value="25">25 per page</option>
@@ -1024,7 +1025,7 @@ const BlogManagement = () => {
                           <img
                             className="h-8 w-8 rounded-full mr-2"
                             src={
-                              blog.author.profilePhoto || '/default-avatar.png'
+                              blog.author.profilePhoto || "/default-avatar.png"
                             }
                             alt={blog.author.username}
                           />
@@ -1037,7 +1038,7 @@ const BlogManagement = () => {
                         <span
                           className="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                           style={{
-                            backgroundColor: blog.category.color + '20',
+                            backgroundColor: blog.category.color + "20",
                             color: blog.category.color,
                           }}
                         >
@@ -1048,11 +1049,11 @@ const BlogManagement = () => {
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             blog.isPublished
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                           }`}
                         >
-                          {blog.isPublished ? 'Published' : 'Draft'}
+                          {blog.isPublished ? "Published" : "Draft"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
@@ -1085,11 +1086,11 @@ const BlogManagement = () => {
                                 }
                                 className={`${
                                   blog.isPublished
-                                    ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400'
-                                    : 'text-green-600 hover:text-green-900 dark:text-green-400'
+                                    ? "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400"
+                                    : "text-green-600 hover:text-green-900 dark:text-green-400"
                                 }`}
                                 title={
-                                  blog.isPublished ? 'Unpublish' : 'Publish'
+                                  blog.isPublished ? "Unpublish" : "Publish"
                                 }
                               >
                                 {blog.isPublished ? (
@@ -1121,17 +1122,17 @@ const BlogManagement = () => {
             <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing {(pagination.current - 1) * filters.limit + 1} to{' '}
+                  Showing {(pagination.current - 1) * filters.limit + 1} to{" "}
                   {Math.min(
                     pagination.current * filters.limit,
-                    pagination.total
-                  )}{' '}
+                    pagination.total,
+                  )}{" "}
                   of {pagination.total} results
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() =>
-                      handleFilterChange('page', pagination.current - 1)
+                      handleFilterChange("page", pagination.current - 1)
                     }
                     disabled={!pagination.hasPrev}
                     className="px-3 py-1 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1143,7 +1144,7 @@ const BlogManagement = () => {
                   </span>
                   <button
                     onClick={() =>
-                      handleFilterChange('page', pagination.current + 1)
+                      handleFilterChange("page", pagination.current + 1)
                     }
                     disabled={!pagination.hasNext}
                     className="px-3 py-1 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
