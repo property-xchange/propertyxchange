@@ -59,7 +59,7 @@ const Footer = () => {
                 <FiSmartphone className="mr-2" />
                 <Link to="tel:+2347037248610">07037248610</Link>
               </li>
-              <li className="flex justify-start items-center mb-2">
+              <li className="flex justify-start items-start mb-2">
                 <HiOutlineMapPin className="mr-2" />
                 <Link>
                   15, Chris Onanuga Street, Lekki Phase 1, <br /> Eti-Osa LGA,
