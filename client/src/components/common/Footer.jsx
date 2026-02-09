@@ -57,7 +57,7 @@ const Footer = () => {
               </li>
               <li className="flex justify-start items-center mb-2">
                 <FiSmartphone className="mr-2" />
-                <Link to="tel:+2348150000">+234 815 0000</Link>
+                <Link to="tel:+2347037248610">07037248610</Link>
               </li>
               <li className="flex justify-start items-center mb-2">
                 <HiOutlineMapPin className="mr-2" />
