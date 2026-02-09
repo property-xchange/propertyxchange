@@ -1,14 +1,12 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-
-import { BiBuildingHouse } from 'react-icons/bi';
-import { FaInstagram, FaLinkedin, FaTwitter } from 'react-icons/fa';
-import { FiFacebook } from 'react-icons/fi';
-import { HiOutlineMapPin } from 'react-icons/hi2';
-import { FiSmartphone } from 'react-icons/fi';
-import { FiMail } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
-import Logo from '../../assets/logo.svg';
-import Subscribe from './page-components/Subscribe';
+import { BiBuildingHouse } from "react-icons/bi";
+import { FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FiFacebook } from "react-icons/fi";
+import { HiOutlineMapPin } from "react-icons/hi2";
+import { FiSmartphone } from "react-icons/fi";
+import { FiMail } from "react-icons/fi";
+import { Link } from "react-router-dom";
+import Logo from "../../assets/logo.svg";
+import Subscribe from "./page-components/Subscribe";
 
 const Footer = () => {
   return (
@@ -25,8 +23,8 @@ const Footer = () => {
             </Link>
             <div className="mt-3">
               <p className="text-sm">
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab
-                harum explicabo illo, magnam vitae expedita.
+                PropertyXchange is a real estate platform that connects buyers,
+                sellers, and agents. Find your dream property with us!
               </p>
               <div className="gap-5 my-6 flex-center-center">
                 <div className="icon-box bg-dark-light hover:bg-hover-color-dark">
