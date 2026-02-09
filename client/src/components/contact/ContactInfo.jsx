@@ -38,8 +38,8 @@ const ContactInfo = () => {
           <BiMap />
         </div>
         <h1 className="mt-2 text-lg font-semibold">Office Address</h1>
-        <p>Lumumu Street Plot 3943, Ikeja, Lagos, Nigeria</p>
-        <p>Horizon Street, Middle Avenue, Nigeria</p>
+        <p>15, Chris Onanuga Street, Lekki Phase 1,</p>
+        <p> Eti-Osa LGA, Lagos</p>
       </div>
     </div>
   );

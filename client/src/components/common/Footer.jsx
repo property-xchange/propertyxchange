@@ -61,7 +61,10 @@ const Footer = () => {
               </li>
               <li className="flex justify-start items-center mb-2">
                 <HiOutlineMapPin className="mr-2" />
-                <Link>10 Ikeja Alausa GRA Lagos</Link>
+                <Link>
+                  15, Chris Onanuga Street, Lekki Phase 1, <br /> Eti-Osa LGA,
+                  Lagos
+                </Link>
               </li>
             </ul>
           </div>
